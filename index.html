@@ -28,6 +28,8 @@
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+/* Prevent iOS double-tap zoom and improve tap responsiveness */
+button, [onclick] { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 
 /* Ambient background */
 .ambient{position:fixed;inset:0;pointer-events:none;overflow:hidden;}
@@ -38,7 +40,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
 @keyframes blobFloat{0%,100%{transform:translate(0,0) scale(1);}33%{transform:translate(30px,-20px) scale(1.05);}66%{transform:translate(-20px,30px) scale(0.95);}}
 
 /* Layout */
-.wrapper{display:flex;align-items:center;gap:52px;position:relative;z-index:1;}
+.wrapper{display:flex;align-items:center;justify-content:center;position:relative;z-index:1;}
 
 /* Phone */
 .phone{width:393px;height:852px;background:#111318;border-radius:56px;border:1.5px solid rgba(255,255,255,0.12);box-shadow:0 0 0 1px rgba(0,0,0,0.9),0 50px 100px rgba(0,0,0,0.8),inset 0 1px 0 rgba(255,255,255,0.08);position:relative;flex-shrink:0;}
@@ -96,14 +98,15 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
 .lf-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
 .lf-hint{font-size:12px;color:var(--text2);}
 .lf-link{font-size:12px;color:var(--accent);}
-.btn-primary{width:100%;padding:16px;background:linear-gradient(135deg,#4f8ef7,#2563eb);border:none;border-radius:16px;color:#fff;font-size:16px;font-weight:700;font-family:var(--font);cursor:pointer;transition:all 0.2s;letter-spacing:0.5px;}
+.btn-primary{width:100%;padding:16px;background:linear-gradient(135deg,#4f8ef7,#2563eb);border:none;border-radius:16px;color:#fff;font-size:16px;font-weight:700;font-family:var(--font);cursor:pointer;transition:all 0.2s;letter-spacing:0.5px;touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
 .btn-primary:active{transform:scale(0.97);opacity:0.9;}
 .login-roles{display:flex;gap:10px;margin-top:20px;}
-.role-btn{flex:1;padding:12px 8px;background:var(--surface);border:1px solid var(--border);border-radius:14px;text-align:center;cursor:pointer;transition:all 0.2s;}
-.role-btn:active,.role-btn.sel{background:rgba(79,142,247,0.1);border-color:var(--accent);}
-.role-ico{font-size:22px;margin-bottom:4px;}
-.role-lbl{font-size:11px;color:var(--text2);font-weight:500;}
-.role-btn.sel .role-lbl{color:var(--accent);}
+.role-btn{flex:1;padding:14px 8px;background:var(--surface);border:1px solid var(--border);border-radius:14px;text-align:center;cursor:pointer;transition:all 0.2s;touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none;}
+.role-btn:active{transform:scale(0.94);}
+.role-btn.sel{background:rgba(79,142,247,0.14);border-color:var(--accent);box-shadow:0 0 0 1px var(--accent);}
+.role-ico{font-size:26px;margin-bottom:6px;pointer-events:none;}
+.role-lbl{font-size:11px;color:var(--text2);font-weight:500;pointer-events:none;}
+.role-btn.sel .role-lbl{color:var(--accent);font-weight:700;}
 
 /* ══ DASHBOARD ══ */
 .dash-head{padding:18px 20px 12px;}
@@ -380,31 +383,93 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
   <div class="amb-blob amb3"></div>
 </div>
 
-<div class="wrapper">
-<!-- SIDE PANEL -->
-<div class="side">
-  <div class="side-logo">
-    <div class="side-logo-ico">🛡️</div>
-    <div>
-      <div class="side-logo-name">护安宝</div>
-      <div class="side-logo-sub">智慧养老管理平台</div>
+<!-- ══ WELCOME SPLASH ══ -->
+<div id="splash" onclick="enterApp()" style="
+  position:fixed;inset:0;z-index:999;
+  background:radial-gradient(ellipse at 30% 20%, rgba(79,142,247,0.18) 0%, transparent 55%),
+             radial-gradient(ellipse at 80% 80%, rgba(0,229,160,0.12) 0%, transparent 50%),
+             #07090f;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;
+  animation:splashIn 0.6s ease forwards;
+">
+  <!-- Logo -->
+  <div style="width:90px;height:90px;background:linear-gradient(135deg,#4f8ef7,#00e5a0);border-radius:26px;display:flex;align-items:center;justify-content:center;font-size:46px;margin-bottom:20px;box-shadow:0 16px 48px rgba(79,142,247,0.4);animation:logoBounce 0.8s cubic-bezier(0.34,1.56,0.64,1) 0.2s both;">🛡️</div>
+
+  <!-- Name -->
+  <div style="font-size:42px;font-weight:900;background:linear-gradient(135deg,#fff 30%,#a8c8ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px;animation:fadeUp 0.6s ease 0.4s both;">护安宝</div>
+  <div style="font-size:15px;color:#7a8caa;margin-bottom:48px;animation:fadeUp 0.6s ease 0.5s both;">智慧养老管理平台</div>
+
+  <!-- Feature pills -->
+  <div style="display:flex;flex-direction:column;gap:12px;width:280px;animation:fadeUp 0.6s ease 0.6s both;">
+    <div style="display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:12px 16px;">
+      <span style="font-size:22px;">🚨</span>
+      <div><div style="font-size:13px;font-weight:700;">跌倒坠床秒级预警</div><div style="font-size:11px;color:#7a8caa;margin-top:1px;">毫米波雷达 · AI识别 · 0.3秒响应</div></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:12px 16px;">
+      <span style="font-size:22px;">💓</span>
+      <div><div style="font-size:13px;font-weight:700;">实时健康监测</div><div style="font-size:11px;color:#7a8caa;margin-top:1px;">血压 · 心率 · 血氧 · 体温全采集</div></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:12px 16px;">
+      <span style="font-size:22px;">👨‍👩‍👧</span>
+      <div><div style="font-size:13px;font-weight:700;">三端联动</div><div style="font-size:11px;color:#7a8caa;margin-top:1px;">护工 · 管理员 · 家属 各端独立</div></div>
     </div>
   </div>
-  <div class="version-badge">✨ v2.0 演示版</div>
-  <div class="side-tagline">让每位老人<br>都被妥善照护</div>
-  <div class="side-sub">面向养老机构的全链路智能照护系统，从传感器到手机屏幕，零延迟守护每一位老人。</div>
-  <div class="feature-list">
-    <div class="fi"><div class="fi-ico" style="background:rgba(255,77,77,0.12)">🚨</div><div><div class="fi-text">跌倒坠床秒级预警</div><div class="fi-sub">毫米波雷达·AI识别·0.3秒响应</div></div></div>
-    <div class="fi"><div class="fi-ico" style="background:rgba(79,142,247,0.12)">💓</div><div><div class="fi-text">实时健康数据监测</div><div class="fi-sub">血压·心率·血氧·体温全采集</div></div></div>
-    <div class="fi"><div class="fi-ico" style="background:rgba(0,229,160,0.1)">📋</div><div><div class="fi-text">数字化照护记录</div><div class="fi-sub">一键录入·自动归档·合规存储</div></div></div>
-    <div class="fi"><div class="fi-ico" style="background:rgba(167,139,250,0.12)">👨‍👩‍👧</div><div><div class="fi-text">家属远程查看端</div><div class="fi-sub">实时了解老人状态·安心无忧</div></div></div>
-    <div class="fi"><div class="fi-ico" style="background:rgba(247,195,79,0.12)">🗓️</div><div><div class="fi-text">护工排班管理</div><div class="fi-sub">班次分配·任务追踪·绩效统计</div></div></div>
+
+  <!-- Countdown tap hint -->
+  <div style="margin-top:48px;display:flex;flex-direction:column;align-items:center;gap:10px;animation:fadeUp 0.6s ease 0.8s both;">
+    <!-- Progress ring -->
+    <svg width="48" height="48" viewBox="0 0 48 48" style="transform:rotate(-90deg);">
+      <circle cx="24" cy="24" r="20" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="3"/>
+      <circle id="ring" cx="24" cy="24" r="20" fill="none" stroke="#4f8ef7" stroke-width="3"
+        stroke-dasharray="125.6" stroke-dashoffset="0" stroke-linecap="round"
+        style="transition:stroke-dashoffset 0.1s linear;"/>
+    </svg>
+    <div style="font-size:12px;color:#3a4a60;">轻触任意处进入 · <span id="countdown">3</span>秒后自动跳转</div>
   </div>
-  <div class="side-hint">👆 点击手机内的功能区域交互演示</div>
 </div>
 
+<style>
+@keyframes splashIn{from{opacity:0;}to{opacity:1;}}
+@keyframes logoBounce{from{transform:scale(0.4) rotate(-15deg);opacity:0;}to{transform:scale(1) rotate(0);opacity:1;}}
+@keyframes fadeUp{from{transform:translateY(20px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+@keyframes splashOut{from{opacity:1;transform:scale(1);}to{opacity:0;transform:scale(1.04);}}
+</style>
+
+<script>
+// Splash countdown + auto-redirect
+(function(){
+  const total = 3000;
+  const ring = document.getElementById('ring');
+  const cd = document.getElementById('countdown');
+  const circumference = 125.6;
+  let elapsed = 0;
+  const interval = setInterval(() => {
+    elapsed += 100;
+    const progress = elapsed / total;
+    ring.style.strokeDashoffset = circumference * progress;
+    const secs = Math.ceil((total - elapsed) / 1000);
+    if (cd) cd.textContent = secs > 0 ? secs : 0;
+    if (elapsed >= total) {
+      clearInterval(interval);
+      enterApp();
+    }
+  }, 100);
+
+  window._splashTimer = interval;
+})();
+
+function enterApp() {
+  clearInterval(window._splashTimer);
+  const splash = document.getElementById('splash');
+  splash.style.animation = 'splashOut 0.35s ease forwards';
+  setTimeout(() => { splash.style.display = 'none'; }, 340);
+}
+</script>
+
+<div class="wrapper">
 <!-- PHONE -->
-<div class="phone">
+<div class="phone" style="margin:0 auto;">
   <div class="di" id="di"></div>
   <div class="toast" id="toast">
     <div class="toast-ico" id="t-ico">⚠️</div>
