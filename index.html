@@ -1,0 +1,1378 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>护安宝 v2 · 智慧养老平台</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #07090f;
+  --surface: #0f1520;
+  --surface2: #161f30;
+  --surface3: #1c2840;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.12);
+  --accent: #4f8ef7;
+  --accent2: #00e5a0;
+  --accent3: #f7c34f;
+  --danger: #ff4d4d;
+  --warning: #ffaa00;
+  --purple: #a78bfa;
+  --text: #eef2ff;
+  --text2: #7a8caa;
+  --text3: #3a4a60;
+  --font: 'Noto Sans SC', sans-serif;
+  --r: 20px;
+  --r2: 14px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+
+/* Ambient background */
+.ambient{position:fixed;inset:0;pointer-events:none;overflow:hidden;}
+.amb-blob{position:absolute;border-radius:50%;filter:blur(80px);opacity:0.5;}
+.amb1{width:600px;height:600px;background:radial-gradient(circle,rgba(79,142,247,0.12),transparent 70%);top:-100px;left:-100px;animation:blobFloat 8s ease-in-out infinite;}
+.amb2{width:500px;height:500px;background:radial-gradient(circle,rgba(0,229,160,0.08),transparent 70%);bottom:-100px;right:-50px;animation:blobFloat 10s ease-in-out infinite reverse;}
+.amb3{width:400px;height:400px;background:radial-gradient(circle,rgba(167,139,250,0.06),transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);animation:blobFloat 12s ease-in-out infinite 2s;}
+@keyframes blobFloat{0%,100%{transform:translate(0,0) scale(1);}33%{transform:translate(30px,-20px) scale(1.05);}66%{transform:translate(-20px,30px) scale(0.95);}}
+
+/* Layout */
+.wrapper{display:flex;align-items:center;gap:52px;position:relative;z-index:1;}
+
+/* Phone */
+.phone{width:393px;height:852px;background:#111318;border-radius:56px;border:1.5px solid rgba(255,255,255,0.12);box-shadow:0 0 0 1px rgba(0,0,0,0.9),0 50px 100px rgba(0,0,0,0.8),inset 0 1px 0 rgba(255,255,255,0.08);position:relative;flex-shrink:0;}
+.di{position:absolute;top:14px;left:50%;transform:translateX(-50%);width:126px;height:36px;background:#000;border-radius:20px;z-index:100;transition:all 0.5s cubic-bezier(0.34,1.56,0.64,1);display:flex;align-items:center;justify-content:center;gap:6px;overflow:hidden;}
+.di.wide{width:220px;height:44px;}
+.di-content{font-size:11px;font-weight:600;opacity:0;transition:opacity 0.3s;white-space:nowrap;}
+.di.wide .di-content{opacity:1;}
+.screen{position:absolute;inset:0;border-radius:56px;overflow:hidden;background:var(--bg);}
+
+/* Status bar */
+.sbar{height:58px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 28px 10px;font-size:12px;font-weight:600;flex-shrink:0;position:relative;z-index:10;}
+
+/* Pages */
+.page{position:absolute;inset:0;display:none;flex-direction:column;border-radius:56px;overflow:hidden;background:var(--bg);}
+.page.active{display:flex;animation:pgIn 0.38s cubic-bezier(0.22,1,0.36,1) forwards;}
+.page.back{animation:pgBack 0.35s cubic-bezier(0.22,1,0.36,1) forwards;}
+@keyframes pgIn{from{transform:translateX(100%);opacity:0;}to{transform:translateX(0);opacity:1;}}
+@keyframes pgBack{from{transform:translateX(-40%);opacity:0;}to{transform:translateX(0);opacity:1;}}
+
+.pcontent{flex:1;overflow-y:auto;padding-bottom:88px;scrollbar-width:none;}
+.pcontent::-webkit-scrollbar{display:none;}
+
+/* Bottom nav */
+.bnav{height:84px;background:rgba(10,14,24,0.96);backdrop-filter:blur(24px);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-around;padding:0 8px 16px;position:absolute;bottom:0;left:0;right:0;z-index:20;border-radius:0 0 56px 56px;}
+.ni{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:6px 14px;border-radius:16px;transition:all 0.2s;opacity:0.45;}
+.ni.on{opacity:1;}
+.ni:active{transform:scale(0.88);}
+.ni .ico{font-size:22px;position:relative;}
+.ni .lbl{font-size:10px;font-weight:500;color:var(--text2);}
+.ni.on .lbl{color:var(--accent);}
+.nbadge{position:absolute;top:-3px;right:-6px;min-width:16px;height:16px;background:var(--danger);border-radius:8px;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;color:#fff;padding:0 3px;}
+.sos-fab{width:56px;height:56px;background:linear-gradient(135deg,#ff4d4d,#cc0000);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;margin-top:-22px;box-shadow:0 0 24px rgba(255,77,77,0.5);cursor:pointer;transition:transform 0.2s;animation:sosPulse 2.5s infinite;}
+.sos-fab:active{transform:scale(0.9);}
+@keyframes sosPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,77,77,0.5);}70%{box-shadow:0 0 0 18px rgba(255,77,77,0);}}
+
+/* ── Toast ── */
+.toast{position:absolute;top:68px;left:14px;right:14px;background:rgba(18,26,44,0.97);backdrop-filter:blur(20px);border:1px solid var(--border2);border-radius:18px;padding:14px 16px;display:flex;align-items:center;gap:12px;z-index:300;transform:translateY(-130%);transition:transform 0.45s cubic-bezier(0.34,1.56,0.64,1);box-shadow:0 12px 40px rgba(0,0,0,0.5);}
+.toast.show{transform:translateY(0);}
+.toast.danger{border-color:rgba(255,77,77,0.35);}
+.toast-ico{font-size:26px;flex-shrink:0;}
+.toast-title{font-size:13px;font-weight:700;}
+.toast-body{font-size:11px;color:var(--text2);margin-top:2px;}
+
+/* ══ LOGIN PAGE ══ */
+#pg-login{background:linear-gradient(160deg,#07090f 0%,#0c1526 100%);}
+.login-logo{display:flex;flex-direction:column;align-items:center;padding:60px 0 32px;}
+.logo-icon{width:72px;height:72px;background:linear-gradient(135deg,#4f8ef7,#00e5a0);border-radius:22px;display:flex;align-items:center;justify-content:center;font-size:36px;margin-bottom:16px;box-shadow:0 12px 40px rgba(79,142,247,0.35);animation:logoAppear 0.8s cubic-bezier(0.34,1.56,0.64,1);}
+@keyframes logoAppear{from{transform:scale(0.5) rotate(-10deg);opacity:0;}to{transform:scale(1) rotate(0);opacity:1;}}
+.logo-name{font-size:28px;font-weight:900;background:linear-gradient(135deg,#fff,#a8c4ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.logo-sub{font-size:13px;color:var(--text2);margin-top:4px;}
+.login-form{padding:0 28px;}
+.lf-label{font-size:12px;color:var(--text2);margin-bottom:8px;display:block;font-weight:500;}
+.lf-input{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:14px;color:var(--text);font-family:var(--font);font-size:15px;padding:14px 16px;outline:none;transition:border-color 0.2s;margin-bottom:14px;}
+.lf-input:focus{border-color:var(--accent);}
+.lf-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
+.lf-hint{font-size:12px;color:var(--text2);}
+.lf-link{font-size:12px;color:var(--accent);}
+.btn-primary{width:100%;padding:16px;background:linear-gradient(135deg,#4f8ef7,#2563eb);border:none;border-radius:16px;color:#fff;font-size:16px;font-weight:700;font-family:var(--font);cursor:pointer;transition:all 0.2s;letter-spacing:0.5px;}
+.btn-primary:active{transform:scale(0.97);opacity:0.9;}
+.login-roles{display:flex;gap:10px;margin-top:20px;}
+.role-btn{flex:1;padding:12px 8px;background:var(--surface);border:1px solid var(--border);border-radius:14px;text-align:center;cursor:pointer;transition:all 0.2s;}
+.role-btn:active,.role-btn.sel{background:rgba(79,142,247,0.1);border-color:var(--accent);}
+.role-ico{font-size:22px;margin-bottom:4px;}
+.role-lbl{font-size:11px;color:var(--text2);font-weight:500;}
+.role-btn.sel .role-lbl{color:var(--accent);}
+
+/* ══ DASHBOARD ══ */
+.dash-head{padding:18px 20px 12px;}
+.dh-top{display:flex;justify-content:space-between;align-items:center;}
+.dh-greet{font-size:12px;color:var(--text2);margin-bottom:2px;}
+.dh-name{font-size:22px;font-weight:800;}
+.dh-avatar{width:42px;height:42px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;}
+.dh-date{font-size:12px;color:var(--text2);margin-top:4px;}
+
+/* Alert banner */
+.alert-banner{margin:0 14px 14px;background:linear-gradient(135deg,rgba(255,77,77,0.12),rgba(255,77,77,0.04));border:1px solid rgba(255,77,77,0.3);border-radius:20px;padding:14px;cursor:pointer;transition:all 0.2s;animation:alertPulse 2s infinite;}
+@keyframes alertPulse{0%,100%{border-color:rgba(255,77,77,0.3);}50%{border-color:rgba(255,77,77,0.65);box-shadow:0 0 24px rgba(255,77,77,0.12);}}
+.alert-banner:active{transform:scale(0.97);}
+.ab-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.ab-type{font-size:12px;font-weight:700;color:var(--danger);display:flex;align-items:center;gap:5px;}
+.ab-time{font-size:11px;color:var(--text2);}
+.ab-title{font-size:15px;font-weight:700;margin-bottom:4px;}
+.ab-sub{font-size:12px;color:var(--text2);}
+.ab-actions{display:flex;gap:8px;margin-top:12px;}
+.btn-red{flex:1;padding:10px;background:var(--danger);border-radius:12px;border:none;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);transition:all 0.2s;}
+.btn-ghost{flex:1;padding:10px;background:transparent;border:1px solid var(--border2);border-radius:12px;color:var(--text);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);transition:all 0.2s;}
+.btn-red:active,.btn-ghost:active{transform:scale(0.95);}
+
+/* Stats strip */
+.stats-strip{display:flex;gap:10px;padding:0 14px;margin-bottom:14px;}
+.sc{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:14px 12px;}
+.sc-ico{font-size:18px;margin-bottom:6px;}
+.sc-val{font-size:22px;font-weight:900;}
+.sc-lbl{font-size:10px;color:var(--text2);margin-top:2px;}
+.sc-chg{font-size:10px;margin-top:3px;font-weight:600;}
+.up{color:var(--accent2);}
+.dn{color:var(--danger);}
+
+/* Section header */
+.sec-hd{display:flex;justify-content:space-between;align-items:center;padding:0 20px 10px;}
+.sec-title{font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.6px;}
+.sec-more{font-size:12px;color:var(--accent);}
+
+/* Resident card */
+.rc{margin:0 14px 10px;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all 0.22s;}
+.rc:active{transform:scale(0.97);background:var(--surface2);}
+.rc-av{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;flex-shrink:0;}
+.rc-info{flex:1;min-width:0;}
+.rc-name{font-size:15px;font-weight:700;margin-bottom:2px;}
+.rc-det{font-size:11px;color:var(--text2);}
+.rc-right{display:flex;flex-direction:column;align-items:flex-end;gap:5px;}
+.sdot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:4px;}
+.s-ok{background:var(--accent2);}
+.s-warn{background:var(--warning);}
+.s-danger{background:var(--danger);animation:blink 1s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0.2;}}
+.rc-vital{font-size:11px;color:var(--text2);}
+.rc-tag{font-size:10px;padding:3px 8px;border-radius:8px;font-weight:600;}
+.tag-danger{background:rgba(255,77,77,0.15);color:var(--danger);}
+.tag-warn{background:rgba(255,170,0,0.15);color:var(--warning);}
+.tag-ok{background:rgba(0,229,160,0.12);color:var(--accent2);}
+
+/* Mini chart in resident */
+.mini-bars{display:flex;align-items:flex-end;gap:2px;height:24px;}
+.mb{width:5px;border-radius:2px;background:var(--accent);opacity:0.6;}
+
+/* ══ HEALTH DETAIL PAGE ══ */
+.hd-head{padding:16px 18px 12px;display:flex;align-items:center;gap:12px;}
+.back{width:34px;height:34px;background:var(--surface);border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;transition:all 0.2s;flex-shrink:0;}
+.back:active{transform:scale(0.88);}
+.hd-info{flex:1;}
+.hd-name{font-size:19px;font-weight:800;}
+.hd-sub{font-size:11px;color:var(--text2);margin-top:2px;}
+.hd-risk{padding:4px 10px;border-radius:10px;font-size:11px;font-weight:700;}
+.risk-hi{background:rgba(255,77,77,0.15);color:var(--danger);}
+.risk-mid{background:rgba(255,170,0,0.12);color:var(--warning);}
+.risk-lo{background:rgba(0,229,160,0.12);color:var(--accent2);}
+
+/* Profile card */
+.profile-card{margin:0 14px 14px;background:linear-gradient(135deg,var(--surface2),var(--surface));border:1px solid var(--border);border-radius:20px;padding:16px;}
+.profile-row{display:flex;gap:8px;flex-wrap:wrap;}
+.pf-item{background:var(--bg);border-radius:10px;padding:8px 12px;flex:1;min-width:80px;}
+.pf-lbl{font-size:10px;color:var(--text2);margin-bottom:3px;}
+.pf-val{font-size:13px;font-weight:700;}
+
+/* Vital grid */
+.vital-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 14px;margin-bottom:14px;}
+.vc{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:14px;position:relative;overflow:hidden;cursor:pointer;transition:all 0.2s;}
+.vc:active{transform:scale(0.96);}
+.vc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.vc.hr::before{background:linear-gradient(90deg,#ff4d4d,#ff8c42);}
+.vc.bp::before{background:linear-gradient(90deg,#a78bfa,#4f8ef7);}
+.vc.o2::before{background:linear-gradient(90deg,#00e5a0,#4f8ef7);}
+.vc.tp::before{background:linear-gradient(90deg,#f7c34f,#ff8c42);}
+.vc-ico{font-size:16px;margin-bottom:6px;}
+.vc-val{font-size:26px;font-weight:900;}
+.vc-unit{font-size:11px;color:var(--text2);}
+.vc-name{font-size:10px;color:var(--text2);margin-top:2px;}
+.vc-st{font-size:10px;font-weight:600;margin-top:4px;}
+.st-ok{color:var(--accent2);}
+.st-warn{color:var(--warning);}
+.st-danger{color:var(--danger);}
+
+/* SVG chart */
+.chart-card{margin:0 14px 14px;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:16px;}
+.cc-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+.cc-title{font-size:13px;font-weight:700;}
+.cc-tabs{display:flex;gap:4px;}
+.cc-tab{font-size:11px;padding:4px 10px;border-radius:10px;cursor:pointer;transition:all 0.2s;color:var(--text2);}
+.cc-tab.on{background:rgba(79,142,247,0.15);color:var(--accent);font-weight:600;}
+.chart-svg{width:100%;overflow:visible;}
+
+/* Sensor cards */
+.sensor{margin:0 14px 10px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px;}
+.s-ico{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.s-info{flex:1;}
+.s-name{font-size:14px;font-weight:600;}
+.s-det{font-size:11px;color:var(--text2);margin-top:2px;}
+.s-badge{font-size:11px;font-weight:600;padding:4px 10px;border-radius:10px;}
+.b-ok{background:rgba(0,229,160,0.12);color:var(--accent2);}
+.b-warn{background:rgba(255,170,0,0.12);color:var(--warning);}
+.b-danger{background:rgba(255,77,77,0.12);color:var(--danger);}
+.b-off{background:rgba(255,255,255,0.04);color:var(--text3);}
+
+/* ══ RECORDS PAGE ══ */
+.form-card{margin:0 14px 14px;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:18px;}
+.fc-title{font-size:15px;font-weight:700;margin-bottom:14px;}
+.fl{margin-bottom:12px;}
+.fl-lbl{font-size:11px;color:var(--text2);margin-bottom:6px;display:block;font-weight:500;}
+.fl-sel,.fl-inp,.fl-ta{width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:12px;color:var(--text);font-family:var(--font);font-size:14px;padding:12px 14px;outline:none;transition:border-color 0.2s;}
+.fl-sel:focus,.fl-inp:focus,.fl-ta:focus{border-color:var(--accent);}
+.fl-ta{resize:none;height:76px;line-height:1.5;}
+.check-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.ci{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:9px 12px;font-size:12px;cursor:pointer;transition:all 0.2s;text-align:center;}
+.ci.on{background:rgba(79,142,247,0.1);border-color:var(--accent);color:var(--accent);}
+.btn-submit{width:100%;padding:15px;background:linear-gradient(135deg,#4f8ef7,#2563eb);border:none;border-radius:16px;color:#fff;font-size:15px;font-weight:700;font-family:var(--font);cursor:pointer;transition:all 0.2s;margin-top:8px;}
+.btn-submit:active{transform:scale(0.97);}
+.rec-item{margin:0 14px 10px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px 16px;}
+.ri-head{display:flex;justify-content:space-between;margin-bottom:6px;}
+.ri-name{font-size:14px;font-weight:700;}
+.ri-time{font-size:11px;color:var(--text2);}
+.ri-by{font-size:11px;color:var(--text2);margin-bottom:6px;}
+.ri-tags{display:flex;gap:6px;flex-wrap:wrap;}
+.rtag{font-size:11px;padding:3px 8px;background:rgba(79,142,247,0.1);color:var(--accent);border-radius:8px;}
+.rtag.alert{background:rgba(255,170,0,0.1);color:var(--warning);}
+
+/* ══ ALERTS PAGE ══ */
+.al-item{margin:0 14px 10px;background:var(--surface);border-radius:18px;padding:14px 16px;cursor:pointer;transition:all 0.2s;border-left:3px solid transparent;border-top:1px solid var(--border);border-right:1px solid var(--border);border-bottom:1px solid var(--border);}
+.al-item:active{transform:scale(0.97);}
+.al-item.danger{border-left-color:var(--danger);border-top-color:rgba(255,77,77,0.2);border-right-color:rgba(255,77,77,0.2);border-bottom-color:rgba(255,77,77,0.2);}
+.al-item.warning{border-left-color:var(--warning);border-top-color:rgba(255,170,0,0.15);border-right-color:rgba(255,170,0,0.15);border-bottom-color:rgba(255,170,0,0.15);}
+.al-item.resolved{opacity:0.5;}
+.ali-hd{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;}
+.ali-type{font-size:13px;font-weight:700;display:flex;align-items:center;gap:5px;}
+.ali-time{font-size:11px;color:var(--text2);}
+.ali-body{font-size:12px;color:var(--text2);line-height:1.5;}
+.ali-ft{display:flex;justify-content:space-between;align-items:center;margin-top:10px;}
+.ali-who{font-size:12px;font-weight:600;}
+.ali-st{font-size:11px;padding:3px 8px;border-radius:8px;}
+.st-un{background:rgba(255,77,77,0.12);color:var(--danger);}
+.st-pr{background:rgba(255,170,0,0.12);color:var(--warning);}
+.st-re{background:rgba(0,229,160,0.12);color:var(--accent2);}
+
+/* Alert stats header */
+.alert-stats{display:flex;gap:10px;padding:0 14px;margin-bottom:14px;}
+.ast{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:12px;text-align:center;}
+.ast-val{font-size:22px;font-weight:900;margin-bottom:2px;}
+.ast-lbl{font-size:10px;color:var(--text2);}
+
+/* ══ SCHEDULE PAGE ══ */
+.schedule-tabs{display:flex;gap:8px;padding:0 14px 14px;}
+.stab{flex:1;padding:10px;background:var(--surface);border:1px solid var(--border);border-radius:12px;text-align:center;font-size:13px;cursor:pointer;transition:all 0.2s;color:var(--text2);}
+.stab.on{background:rgba(79,142,247,0.12);border-color:var(--accent);color:var(--accent);font-weight:600;}
+.shift-card{margin:0 14px 10px;background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:14px 16px;}
+.sh-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.sh-shift{font-size:13px;font-weight:700;}
+.sh-time{font-size:12px;color:var(--text2);}
+.sh-nurses{display:flex;flex-direction:column;gap:8px;}
+.nurse-row{display:flex;align-items:center;gap:10px;}
+.nurse-av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;}
+.nurse-info{flex:1;}
+.nurse-name{font-size:13px;font-weight:600;}
+.nurse-rooms{font-size:11px;color:var(--text2);}
+.nurse-status{font-size:11px;padding:3px 8px;border-radius:8px;}
+.ns-on{background:rgba(0,229,160,0.12);color:var(--accent2);}
+.ns-off{background:rgba(255,255,255,0.04);color:var(--text2);}
+.ns-break{background:rgba(255,170,0,0.12);color:var(--warning);}
+
+/* Task list */
+.task-item{margin:0 14px 8px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:all 0.2s;}
+.task-item:active{transform:scale(0.97);}
+.task-check{width:22px;height:22px;border-radius:50%;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.2s;}
+.task-check.done{background:var(--accent2);border-color:var(--accent2);}
+.task-info{flex:1;}
+.task-name{font-size:13px;font-weight:600;}
+.task-det{font-size:11px;color:var(--text2);margin-top:2px;}
+.task-time{font-size:11px;color:var(--text2);}
+
+/* ══ FAMILY PAGE ══ */
+.family-banner{margin:0 14px 14px;background:linear-gradient(135deg,rgba(79,142,247,0.12),rgba(0,229,160,0.06));border:1px solid rgba(79,142,247,0.2);border-radius:20px;padding:16px;}
+.fb-title{font-size:15px;font-weight:700;margin-bottom:4px;}
+.fb-sub{font-size:12px;color:var(--text2);}
+.family-vital{margin:0 14px 10px;background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:14px 16px;display:flex;align-items:center;gap:12px;}
+.fv-ico{font-size:28px;}
+.fv-info{flex:1;}
+.fv-name{font-size:13px;font-weight:700;}
+.fv-val{font-size:22px;font-weight:900;margin:2px 0;}
+.fv-time{font-size:11px;color:var(--text2);}
+.fv-trend{font-size:11px;font-weight:600;}
+.activity-timeline{margin:0 14px;display:flex;flex-direction:column;gap:0;}
+.at-item{display:flex;gap:12px;padding-bottom:16px;position:relative;}
+.at-item::before{content:'';position:absolute;left:15px;top:30px;bottom:0;width:1px;background:var(--border2);}
+.at-item:last-child::before{display:none;}
+.at-dot{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;border:2px solid var(--border2);}
+.at-body{flex:1;padding-top:4px;}
+.at-title{font-size:13px;font-weight:600;}
+.at-sub{font-size:11px;color:var(--text2);margin-top:2px;}
+.at-time{font-size:10px;color:var(--text3);margin-top:3px;}
+
+/* SOS page */
+#pg-sos{background:radial-gradient(circle at 50% 40%,rgba(255,77,77,0.08),transparent 60%),var(--bg);}
+.sos-center{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:30px 28px;}
+.sos-ring{position:relative;width:140px;height:140px;display:flex;align-items:center;justify-content:center;margin-bottom:28px;}
+.sos-ring::before,.sos-ring::after{content:'';position:absolute;border-radius:50%;border:1px solid rgba(255,77,77,0.3);}
+.sos-ring::before{width:140px;height:140px;animation:ringPulse 2s infinite;}
+.sos-ring::after{width:110px;height:110px;animation:ringPulse 2s infinite 0.5s;}
+@keyframes ringPulse{0%{transform:scale(0.9);opacity:0.8;}100%{transform:scale(1.3);opacity:0;}}
+.sos-btn{width:88px;height:88px;background:linear-gradient(135deg,#ff4d4d,#cc1a1a);border-radius:50%;border:none;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;font-family:var(--font);color:#fff;z-index:1;transition:transform 0.2s;box-shadow:0 0 40px rgba(255,77,77,0.4);}
+.sos-btn:active{transform:scale(0.92);}
+.sos-btn-ico{font-size:30px;}
+.sos-btn-txt{font-size:12px;font-weight:700;margin-top:2px;}
+.sos-title{font-size:22px;font-weight:800;margin-bottom:8px;}
+.sos-desc{font-size:13px;color:var(--text2);text-align:center;line-height:1.6;margin-bottom:36px;}
+.quick-call{width:100%;display:flex;gap:10px;margin-bottom:20px;}
+.qc{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px 8px;text-align:center;cursor:pointer;transition:all 0.2s;}
+.qc:active{transform:scale(0.95);background:var(--surface2);}
+.qc-ico{font-size:24px;margin-bottom:4px;}
+.qc-lbl{font-size:11px;font-weight:600;}
+
+/* Resident detail full page */
+.rd-tabs{display:flex;gap:0;margin:0 14px 14px;background:var(--surface);border-radius:14px;padding:4px;}
+.rd-tab{flex:1;padding:8px;text-align:center;font-size:12px;font-weight:600;cursor:pointer;border-radius:10px;transition:all 0.2s;color:var(--text2);}
+.rd-tab.on{background:var(--accent);color:#fff;}
+
+/* Responsive */
+@media(max-width:800px){
+  body{align-items:flex-start;padding:20px;overflow:auto;}
+  .wrapper{flex-direction:column;align-items:center;}
+  .side{width:100%;max-width:393px;order:-1;}
+  .phone{width:360px;height:780px;}
+}
+@media(max-width:400px){
+  .phone{width:100%;height:auto;min-height:680px;border-radius:36px;}
+  .screen{border-radius:36px;}
+  .bnav{border-radius:0 0 36px 36px;}
+}
+
+/* Side panel */
+.side{width:300px;flex-shrink:0;}
+.side-logo{display:flex;align-items:center;gap:10px;margin-bottom:24px;}
+.side-logo-ico{width:42px;height:42px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;}
+.side-logo-name{font-size:20px;font-weight:900;}
+.side-logo-sub{font-size:11px;color:var(--text2);}
+.side-tagline{font-size:26px;font-weight:900;line-height:1.25;margin-bottom:10px;}
+.side-sub{font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:28px;}
+.feature-list{display:flex;flex-direction:column;gap:10px;margin-bottom:24px;}
+.fi{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.025);border:1px solid var(--border);border-radius:14px;padding:11px 14px;}
+.fi-ico{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.fi-text{font-size:12px;font-weight:600;}
+.fi-sub{font-size:10px;color:var(--text2);margin-top:1px;}
+.side-hint{font-size:12px;color:var(--text3);text-align:center;}
+.version-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(79,142,247,0.1);border:1px solid rgba(79,142,247,0.2);border-radius:20px;padding:5px 12px;font-size:11px;color:var(--accent);margin-bottom:16px;font-weight:600;}
+</style>
+</head>
+<body>
+<div class="ambient">
+  <div class="amb-blob amb1"></div>
+  <div class="amb-blob amb2"></div>
+  <div class="amb-blob amb3"></div>
+</div>
+
+<div class="wrapper">
+<!-- SIDE PANEL -->
+<div class="side">
+  <div class="side-logo">
+    <div class="side-logo-ico">🛡️</div>
+    <div>
+      <div class="side-logo-name">护安宝</div>
+      <div class="side-logo-sub">智慧养老管理平台</div>
+    </div>
+  </div>
+  <div class="version-badge">✨ v2.0 演示版</div>
+  <div class="side-tagline">让每位老人<br>都被妥善照护</div>
+  <div class="side-sub">面向养老机构的全链路智能照护系统，从传感器到手机屏幕，零延迟守护每一位老人。</div>
+  <div class="feature-list">
+    <div class="fi"><div class="fi-ico" style="background:rgba(255,77,77,0.12)">🚨</div><div><div class="fi-text">跌倒坠床秒级预警</div><div class="fi-sub">毫米波雷达·AI识别·0.3秒响应</div></div></div>
+    <div class="fi"><div class="fi-ico" style="background:rgba(79,142,247,0.12)">💓</div><div><div class="fi-text">实时健康数据监测</div><div class="fi-sub">血压·心率·血氧·体温全采集</div></div></div>
+    <div class="fi"><div class="fi-ico" style="background:rgba(0,229,160,0.1)">📋</div><div><div class="fi-text">数字化照护记录</div><div class="fi-sub">一键录入·自动归档·合规存储</div></div></div>
+    <div class="fi"><div class="fi-ico" style="background:rgba(167,139,250,0.12)">👨‍👩‍👧</div><div><div class="fi-text">家属远程查看端</div><div class="fi-sub">实时了解老人状态·安心无忧</div></div></div>
+    <div class="fi"><div class="fi-ico" style="background:rgba(247,195,79,0.12)">🗓️</div><div><div class="fi-text">护工排班管理</div><div class="fi-sub">班次分配·任务追踪·绩效统计</div></div></div>
+  </div>
+  <div class="side-hint">👆 点击手机内的功能区域交互演示</div>
+</div>
+
+<!-- PHONE -->
+<div class="phone">
+  <div class="di" id="di"></div>
+  <div class="toast" id="toast">
+    <div class="toast-ico" id="t-ico">⚠️</div>
+    <div><div class="toast-title" id="t-title"></div><div class="toast-body" id="t-body"></div></div>
+  </div>
+  <div class="screen">
+
+  <!-- ══ LOGIN ══ -->
+  <div class="page active" id="pg-login">
+    <div class="sbar"><span>9:41</span><span>●●●● 🔋</span></div>
+    <div class="pcontent" style="padding-bottom:40px;">
+      <div class="login-logo">
+        <div class="logo-icon">🛡️</div>
+        <div class="logo-name">护安宝</div>
+        <div class="logo-sub">智慧养老管理平台</div>
+      </div>
+      <div class="login-form">
+        <div class="fl">
+          <label class="lf-label">选择登录身份</label>
+          <div class="login-roles">
+            <div class="role-btn sel" onclick="selRole(this)"><div class="role-ico">👩‍⚕️</div><div class="role-lbl">护工/护士</div></div>
+            <div class="role-btn" onclick="selRole(this)"><div class="role-ico">🏥</div><div class="role-lbl">机构管理员</div></div>
+            <div class="role-btn" onclick="selRole(this)"><div class="role-ico">👨‍👩‍👧</div><div class="role-lbl">家属</div></div>
+          </div>
+        </div>
+        <div class="fl">
+          <label class="lf-label">手机号 / 工号</label>
+          <input class="lf-input" value="13800138001" type="text">
+        </div>
+        <div class="fl">
+          <label class="lf-label">密码</label>
+          <input class="lf-input" value="••••••••" type="password">
+        </div>
+        <div class="lf-row">
+          <div class="lf-hint">已加密保护您的信息</div>
+          <div class="lf-link">忘记密码？</div>
+        </div>
+        <button class="btn-primary" onclick="doLogin()">登 录</button>
+        <div style="text-align:center;margin-top:16px;font-size:12px;color:var(--text2);">演示账号已预填 · 直接点击登录</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ DASHBOARD ══ -->
+  <div class="page" id="pg-dash">
+    <div class="sbar"><span>9:41</span><span>●●●● 🔋</span></div>
+    <div class="pcontent">
+      <div class="dash-head">
+        <div class="dh-top">
+          <div>
+            <div class="dh-greet" id="dash-greet">早上好，</div>
+            <div class="dh-name" id="dash-name">李护士 👋</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div class="dh-avatar" id="dash-avatar">李</div>
+            <div onclick="doLogout()" style="width:32px;height:32px;background:var(--surface2);border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;" title="退出登录">🚪</div>
+          </div>
+        </div>
+        <div class="dh-date" id="dash-date">🏥 春晖养老院 · 3月7日 周六 · 早班</div>
+      </div>
+
+      <!-- Alert -->
+      <div class="alert-banner" onclick="goTo('pg-alerts')">
+        <div class="ab-head">
+          <div class="ab-type">🔴 紧急警报</div>
+          <div class="ab-time">2分钟前</div>
+        </div>
+        <div class="ab-title">🚨 305房 王淑芬 — 检测到跌倒</div>
+        <div class="ab-sub">毫米波雷达R3触发 · 已持续未响应</div>
+        <div class="ab-actions">
+          <button class="btn-red" onclick="event.stopPropagation();handleAlert()">立即前往</button>
+          <button class="btn-ghost" onclick="event.stopPropagation();notify()">通知医生</button>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-strip">
+        <div class="sc"><div class="sc-ico">👥</div><div class="sc-val">48</div><div class="sc-lbl">在院老人</div><div class="sc-chg up">↑2 本周</div></div>
+        <div class="sc"><div class="sc-ico">⚠️</div><div class="sc-val" style="color:var(--danger)">3</div><div class="sc-lbl">未处理警报</div><div class="sc-chg dn">需立即处理</div></div>
+        <div class="sc"><div class="sc-ico">✅</div><div class="sc-val" style="color:var(--accent2)">14</div><div class="sc-lbl">今日记录</div><div class="sc-chg up">本班次</div></div>
+      </div>
+
+      <!-- Weekly chart -->
+      <div class="chart-card" style="margin:0 14px 14px;">
+        <div class="cc-head">
+          <div class="cc-title">本周警报趋势</div>
+          <div style="font-size:11px;color:var(--accent);background:rgba(79,142,247,0.1);padding:3px 8px;border-radius:8px;">7天</div>
+        </div>
+        <svg class="chart-svg" viewBox="0 0 340 70" height="70">
+          <defs>
+            <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#ff4d4d" stop-opacity="0.25"/>
+              <stop offset="100%" stop-color="#ff4d4d" stop-opacity="0"/>
+            </linearGradient>
+            <linearGradient id="g2" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#4f8ef7" stop-opacity="0.2"/>
+              <stop offset="100%" stop-color="#4f8ef7" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <!-- danger alerts line -->
+          <path d="M10,55 C40,50 60,35 90,30 C120,25 140,40 170,38 C200,36 220,20 250,18 C280,16 310,40 330,45" fill="none" stroke="#ff4d4d" stroke-width="2"/>
+          <path d="M10,55 C40,50 60,35 90,30 C120,25 140,40 170,38 C200,36 220,20 250,18 C280,16 310,40 330,45 L330,70 L10,70Z" fill="url(#g1)"/>
+          <!-- resolved line -->
+          <path d="M10,60 C40,58 60,50 90,48 C120,46 140,52 170,50 C200,48 220,40 250,38 C280,36 310,48 330,55" fill="none" stroke="#4f8ef7" stroke-width="2"/>
+          <!-- X labels -->
+          <text x="10" y="68" fill="#3a4a60" font-size="8" font-family="sans-serif">周一</text>
+          <text x="60" y="68" fill="#3a4a60" font-size="8" font-family="sans-serif">周二</text>
+          <text x="110" y="68" fill="#3a4a60" font-size="8" font-family="sans-serif">周三</text>
+          <text x="160" y="68" fill="#3a4a60" font-size="8" font-family="sans-serif">周四</text>
+          <text x="210" y="68" fill="#3a4a60" font-size="8" font-family="sans-serif">周五</text>
+          <text x="260" y="68" fill="#3a4a60" font-size="8" font-family="sans-serif">周六</text>
+          <!-- today dot -->
+          <circle cx="330" cy="45" r="4" fill="#ff4d4d"/>
+          <text x="310" y="40" fill="#ff4d4d" font-size="8" font-family="sans-serif">今天</text>
+          <!-- legend -->
+          <rect x="10" y="4" width="8" height="3" rx="1" fill="#ff4d4d"/>
+          <text x="22" y="9" fill="#7a8caa" font-size="8" font-family="sans-serif">紧急警报</text>
+          <rect x="80" y="4" width="8" height="3" rx="1" fill="#4f8ef7"/>
+          <text x="92" y="9" fill="#7a8caa" font-size="8" font-family="sans-serif">已处理</text>
+        </svg>
+      </div>
+
+      <div class="sec-hd"><div class="sec-title">重点关注老人</div><div class="sec-more" onclick="goTo('pg-dash')">全部 →</div></div>
+
+      <div class="rc" onclick="goTo('pg-resident')">
+        <div class="rc-av" style="background:rgba(255,77,77,0.12);color:var(--danger)">王</div>
+        <div class="rc-info">
+          <div class="rc-name">王淑芬 · 305房</div>
+          <div class="rc-det">82岁 · 高血压 · 一级护理</div>
+        </div>
+        <div class="rc-right">
+          <span class="rc-tag tag-danger"><span class="sdot s-danger"></span>需立即处理</span>
+          <div class="rc-vital">HR 98 · BP 142/88</div>
+        </div>
+      </div>
+
+      <div class="rc" onclick="goTo('pg-resident')">
+        <div class="rc-av" style="background:rgba(255,170,0,0.12);color:var(--warning)">张</div>
+        <div class="rc-info">
+          <div class="rc-name">张德明 · 312房</div>
+          <div class="rc-det">76岁 · 糖尿病 · 二级护理</div>
+        </div>
+        <div class="rc-right">
+          <span class="rc-tag tag-warn"><span class="sdot s-warn"></span>血压偏高</span>
+          <div class="rc-vital">BP 148/92</div>
+        </div>
+      </div>
+
+      <div class="rc" onclick="goTo('pg-resident')">
+        <div class="rc-av" style="background:rgba(0,229,160,0.1);color:var(--accent2)">李</div>
+        <div class="rc-info">
+          <div class="rc-name">李桂英 · 301房</div>
+          <div class="rc-det">71岁 · 状态良好 · 三级护理</div>
+        </div>
+        <div class="rc-right">
+          <span class="rc-tag tag-ok"><span class="sdot s-ok"></span>正常</span>
+          <div class="rc-vital">HR 68 · SpO₂ 98%</div>
+        </div>
+      </div>
+
+      <div class="rc" onclick="goTo('pg-resident')">
+        <div class="rc-av" style="background:rgba(79,142,247,0.1);color:var(--accent)">陈</div>
+        <div class="rc-info">
+          <div class="rc-name">陈玉兰 · 308房</div>
+          <div class="rc-det">79岁 · 帕金森 · 一级护理</div>
+        </div>
+        <div class="rc-right">
+          <span class="rc-tag tag-ok"><span class="sdot s-ok"></span>正常</span>
+          <div class="rc-vital">SpO₂ 97%</div>
+        </div>
+      </div>
+
+      <div class="rc" onclick="goTo('pg-resident')">
+        <div class="rc-av" style="background:rgba(167,139,250,0.1);color:var(--purple)">赵</div>
+        <div class="rc-info">
+          <div class="rc-name">赵建国 · 318房</div>
+          <div class="rc-det">85岁 · 心脏病史 · 一级护理</div>
+        </div>
+        <div class="rc-right">
+          <span class="rc-tag tag-warn"><span class="sdot s-warn"></span>心率波动</span>
+          <div class="rc-vital">HR 104</div>
+        </div>
+      </div>
+    </div>
+    <div class="bnav" id="bnav-dash">
+      <div class="ni on" onclick="goTo('pg-dash')"><div class="ico">🏠</div><div class="lbl">首页</div></div>
+      <div class="ni" onclick="goTo('pg-resident')"><div class="ico">💓</div><div class="lbl">健康</div></div>
+      <div class="sos-fab" onclick="goTo('pg-sos')">🆘</div>
+      <div class="ni" onclick="goTo('pg-records')"><div class="ico">📋</div><div class="lbl">记录</div></div>
+      <div class="ni" onclick="goTo('pg-alerts')"><div class="ico">🔔<span class="nbadge">3</span></div><div class="lbl">警报</div></div>
+    </div>
+  </div>
+
+  <!-- ══ RESIDENT DETAIL ══ -->
+  <div class="page" id="pg-resident">
+    <div class="sbar"><span>9:41</span><span>●●●● 🔋</span></div>
+    <div class="pcontent">
+      <div class="hd-head">
+        <div class="back" onclick="goBack()">←</div>
+        <div class="hd-info">
+          <div class="hd-name">王淑芬</div>
+          <div class="hd-sub">305房 · 82岁 · 更新: 刚刚</div>
+        </div>
+        <div class="hd-risk risk-hi">高风险</div>
+      </div>
+
+      <!-- Profile -->
+      <div class="profile-card">
+        <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:10px;">📋 基本信息</div>
+        <div class="profile-row">
+          <div class="pf-item"><div class="pf-lbl">入住日期</div><div class="pf-val">2023.06</div></div>
+          <div class="pf-item"><div class="pf-lbl">护理等级</div><div class="pf-val" style="color:var(--danger)">一级</div></div>
+          <div class="pf-item"><div class="pf-lbl">主要病史</div><div class="pf-val">高血压</div></div>
+        </div>
+        <div style="margin-top:10px;font-size:11px;color:var(--text2);line-height:1.6;">💊 用药：氨氯地平 5mg/日 · 阿司匹林 100mg/日<br>⚠️ 过敏史：青霉素 · 紧急联系：王强 138xxxx</div>
+      </div>
+
+      <!-- Tab switcher -->
+      <div class="rd-tabs">
+        <div class="rd-tab on" onclick="rdTab(this,'rd-vitals')">体征</div>
+        <div class="rd-tab" onclick="rdTab(this,'rd-sensors')">传感器</div>
+        <div class="rd-tab" onclick="rdTab(this,'rd-history')">历史记录</div>
+      </div>
+
+      <!-- Vitals tab -->
+      <div id="rd-vitals">
+        <div class="vital-grid">
+          <div class="vc hr"><div class="vc-ico">❤️</div><div class="vc-val" style="color:#ff4d4d">98</div><div class="vc-unit">bpm</div><div class="vc-name">心率</div><div class="vc-st st-warn">⚠ 偏快</div></div>
+          <div class="vc bp"><div class="vc-ico">🩺</div><div class="vc-val" style="color:var(--purple)">142<span style="font-size:14px">/88</span></div><div class="vc-unit">mmHg</div><div class="vc-name">血压</div><div class="vc-st st-warn">⚠ 偏高</div></div>
+          <div class="vc o2"><div class="vc-ico">💧</div><div class="vc-val" style="color:var(--accent2)">96</div><div class="vc-unit">%</div><div class="vc-name">血氧</div><div class="vc-st st-ok">✓ 正常</div></div>
+          <div class="vc tp"><div class="vc-ico">🌡️</div><div class="vc-val" style="color:var(--accent3)">36.8</div><div class="vc-unit">°C</div><div class="vc-name">体温</div><div class="vc-st st-ok">✓ 正常</div></div>
+        </div>
+
+        <div class="chart-card">
+          <div class="cc-head">
+            <div class="cc-title">心率趋势</div>
+            <div class="cc-tabs">
+              <div class="cc-tab on" onclick="chartTab(this)">24h</div>
+              <div class="cc-tab" onclick="chartTab(this)">7天</div>
+              <div class="cc-tab" onclick="chartTab(this)">30天</div>
+            </div>
+          </div>
+          <svg class="chart-svg" viewBox="0 0 340 80" height="80">
+            <defs>
+              <linearGradient id="hrg" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#ff4d4d" stop-opacity="0.3"/>
+                <stop offset="100%" stop-color="#ff4d4d" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <!-- Normal range band -->
+            <rect x="0" y="20" width="340" height="30" fill="rgba(0,229,160,0.04)" rx="2"/>
+            <line x1="0" y1="20" x2="340" y2="20" stroke="rgba(0,229,160,0.2)" stroke-width="1" stroke-dasharray="4,4"/>
+            <line x1="0" y1="50" x2="340" y2="50" stroke="rgba(0,229,160,0.2)" stroke-width="1" stroke-dasharray="4,4"/>
+            <text x="2" y="18" fill="#00e5a0" font-size="7" font-family="sans-serif" opacity="0.6">100</text>
+            <text x="2" y="54" fill="#00e5a0" font-size="7" font-family="sans-serif" opacity="0.6">60</text>
+            <path d="M0,60 C20,58 35,42 55,40 C75,38 85,52 110,48 C135,44 145,30 165,25 C185,20 200,48 220,50 C240,52 255,28 275,18 C295,8 315,42 340,45" fill="none" stroke="#ff4d4d" stroke-width="2.5"/>
+            <path d="M0,60 C20,58 35,42 55,40 C75,38 85,52 110,48 C135,44 145,30 165,25 C185,20 200,48 220,50 C240,52 255,28 275,18 C295,8 315,42 340,45 L340,80 L0,80Z" fill="url(#hrg)"/>
+            <circle cx="275" cy="18" r="4" fill="#ff4d4d"/>
+            <text x="262" y="13" fill="#ff4d4d" font-size="8" font-family="sans-serif">峰值 108</text>
+          </svg>
+        </div>
+
+        <!-- BP chart -->
+        <div class="chart-card">
+          <div class="cc-head"><div class="cc-title">血压趋势（近7天）</div></div>
+          <svg class="chart-svg" viewBox="0 0 340 80" height="80">
+            <defs>
+              <linearGradient id="bpg" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#a78bfa" stop-opacity="0.2"/>
+                <stop offset="100%" stop-color="#a78bfa" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <!-- Systolic -->
+            <path d="M10,55 L65,50 L120,45 L175,48 L230,40 L285,38 L330,35" fill="none" stroke="#a78bfa" stroke-width="2"/>
+            <path d="M10,55 L65,50 L120,45 L175,48 L230,40 L285,38 L330,35 L330,80 L10,80Z" fill="url(#bpg)"/>
+            <!-- Diastolic -->
+            <path d="M10,68 L65,65 L120,62 L175,64 L230,60 L285,58 L330,55" fill="none" stroke="#4f8ef7" stroke-width="1.5" stroke-dasharray="4,3"/>
+            <!-- Labels -->
+            <text x="10" y="76" fill="#3a4a60" font-size="7" font-family="sans-serif">周一</text>
+            <text x="280" y="76" fill="#3a4a60" font-size="7" font-family="sans-serif">今天</text>
+            <!-- Legend -->
+            <rect x="10" y="4" width="8" height="2" rx="1" fill="#a78bfa"/>
+            <text x="22" y="9" fill="#7a8caa" font-size="7" font-family="sans-serif">收缩压</text>
+            <rect x="70" y="4" width="8" height="2" rx="1" fill="#4f8ef7"/>
+            <text x="82" y="9" fill="#7a8caa" font-size="7" font-family="sans-serif">舒张压</text>
+            <!-- Warning line -->
+            <line x1="0" y1="30" x2="340" y2="30" stroke="rgba(255,77,77,0.3)" stroke-width="1" stroke-dasharray="5,3"/>
+            <text x="290" y="27" fill="var(--danger)" font-size="7" font-family="sans-serif" opacity="0.7">预警值</text>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Sensors tab -->
+      <div id="rd-sensors" style="display:none">
+        <div class="sensor"><div class="s-ico" style="background:rgba(255,77,77,0.1)">📡</div><div class="s-info"><div class="s-name">毫米波雷达 R3</div><div class="s-det">跌倒检测 · 全房覆盖 · 信号强</div></div><div class="s-badge b-danger">⚡ 触发中</div></div>
+        <div class="sensor"><div class="s-ico" style="background:rgba(79,142,247,0.1)">🛏️</div><div class="s-info"><div class="s-name">智能床垫 B-305</div><div class="s-det">离床状态 · 已离床 9分钟</div></div><div class="s-badge b-warn">离床中</div></div>
+        <div class="sensor"><div class="s-ico" style="background:rgba(0,229,160,0.1)">⌚</div><div class="s-info"><div class="s-name">手环 W-042</div><div class="s-det">心率血氧实时 · 电量 78%</div></div><div class="s-badge b-ok">在线</div></div>
+        <div class="sensor"><div class="s-ico" style="background:rgba(255,255,255,0.04)">🚪</div><div class="s-info"><div class="s-name">门磁传感器 D-305</div><div class="s-det">门已关闭 · 上次开启3h前</div></div><div class="s-badge b-ok">正常</div></div>
+        <div class="sensor"><div class="s-ico" style="background:rgba(247,195,79,0.1)">📹</div><div class="s-info"><div class="s-name">红外感应 IR-305</div><div class="s-det">卧室区域 · 已检测到人员倒地</div></div><div class="s-badge b-danger">异常</div></div>
+      </div>
+
+      <!-- History tab -->
+      <div id="rd-history" style="display:none">
+        <div class="rec-item" style="margin:0 14px 10px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px 16px;">
+          <div class="ri-head"><div class="ri-name">今日晨间照护</div><div class="ri-time">08:30</div></div>
+          <div class="ri-by">护工：李护士</div>
+          <div class="ri-tags"><span class="rtag">用药</span><span class="rtag">清洁</span><span class="rtag">早餐</span><span class="rtag alert">血压偏高记录</span></div>
+        </div>
+        <div class="rec-item" style="margin:0 14px 10px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px 16px;">
+          <div class="ri-head"><div class="ri-name">昨日晚间查房</div><div class="ri-time">昨天 21:00</div></div>
+          <div class="ri-by">护工：陈小红</div>
+          <div class="ri-tags"><span class="rtag">体征测量</span><span class="rtag">睡眠观察</span></div>
+        </div>
+        <div class="rec-item" style="margin:0 14px 10px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px 16px;">
+          <div class="ri-head"><div class="ri-name">医生查房记录</div><div class="ri-time">3天前</div></div>
+          <div class="ri-by">值班医生：张医生</div>
+          <div class="ri-tags"><span class="rtag">调整用药</span><span class="rtag alert">血压注意监控</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="bnav">
+      <div class="ni" onclick="goTo('pg-dash')"><div class="ico">🏠</div><div class="lbl">首页</div></div>
+      <div class="ni on" onclick="goTo('pg-resident')"><div class="ico">💓</div><div class="lbl">健康</div></div>
+      <div class="sos-fab" onclick="goTo('pg-sos')">🆘</div>
+      <div class="ni" onclick="goTo('pg-records')"><div class="ico">📋</div><div class="lbl">记录</div></div>
+      <div class="ni" onclick="goTo('pg-alerts')"><div class="ico">🔔<span class="nbadge">3</span></div><div class="lbl">警报</div></div>
+    </div>
+  </div>
+
+  <!-- ══ RECORDS ══ -->
+  <div class="page" id="pg-records">
+    <div class="sbar"><span>9:41</span><span>●●●● 🔋</span></div>
+    <div class="pcontent">
+      <div class="dash-head">
+        <div class="dh-top">
+          <div><div class="dh-greet">本班次</div><div class="dh-name">照护记录 📋</div></div>
+        </div>
+      </div>
+      <div class="form-card">
+        <div class="fc-title">+ 新增照护记录</div>
+        <div class="fl"><label class="fl-lbl">选择老人</label>
+          <select class="fl-sel"><option>王淑芬 · 305房</option><option>张德明 · 312房</option><option>李桂英 · 301房</option><option>陈玉兰 · 308房</option><option>赵建国 · 318房</option></select>
+        </div>
+        <div class="fl"><label class="fl-lbl">照护项目（多选）</label>
+          <div class="check-grid">
+            <div class="ci on" onclick="this.classList.toggle('on')">💊 用药服务</div>
+            <div class="ci" onclick="this.classList.toggle('on')">🍽️ 饮食记录</div>
+            <div class="ci on" onclick="this.classList.toggle('on')">🛁 个人清洁</div>
+            <div class="ci" onclick="this.classList.toggle('on')">🏃 活动锻炼</div>
+            <div class="ci" onclick="this.classList.toggle('on')">🩺 生命体征</div>
+            <div class="ci" onclick="this.classList.toggle('on')">💬 精神状态</div>
+            <div class="ci" onclick="this.classList.toggle('on')">😴 睡眠质量</div>
+            <div class="ci" onclick="this.classList.toggle('on')">🚽 排泄记录</div>
+          </div>
+        </div>
+        <div class="fl"><label class="fl-lbl">血压记录 (mmHg)</label>
+          <div style="display:flex;gap:8px;">
+            <input class="fl-inp" placeholder="收缩压" value="142" style="flex:1">
+            <span style="line-height:44px;color:var(--text2)">/</span>
+            <input class="fl-inp" placeholder="舒张压" value="88" style="flex:1">
+          </div>
+        </div>
+        <div class="fl"><label class="fl-lbl">备注</label>
+          <textarea class="fl-ta">今日用药顺利，老人情绪平稳。血压偏高，已告知值班医生。</textarea>
+        </div>
+        <button class="btn-submit" onclick="submitRec()">📝 提交记录</button>
+      </div>
+
+      <div class="sec-hd"><div class="sec-title">最近记录</div></div>
+
+      <div class="rec-item"><div class="ri-head"><div class="ri-name">李桂英 · 301房</div><div class="ri-time">08:45</div></div><div class="ri-by">护工：陈小红 · 晨间照护</div><div class="ri-tags"><span class="rtag">用药</span><span class="rtag">清洁</span><span class="rtag">早餐</span></div></div>
+      <div class="rec-item"><div class="ri-head"><div class="ri-name">张德明 · 312房</div><div class="ri-time">08:20</div></div><div class="ri-by">护工：李护士 · 体征监测</div><div class="ri-tags"><span class="rtag">血压</span><span class="rtag">血糖</span><span class="rtag alert">血压偏高</span></div></div>
+      <div class="rec-item"><div class="ri-head"><div class="ri-name">陈玉兰 · 308房</div><div class="ri-time">07:55</div></div><div class="ri-by">护工：李护士 · 晨间服务</div><div class="ri-tags"><span class="rtag">用药</span><span class="rtag">活动</span></div></div>
+      <div class="rec-item"><div class="ri-head"><div class="ri-name">赵建国 · 318房</div><div class="ri-time">07:30</div></div><div class="ri-by">护工：王大姐 · 早班查房</div><div class="ri-tags"><span class="rtag">心率测量</span><span class="rtag alert">心率偏快</span></div></div>
+    </div>
+    <div class="bnav">
+      <div class="ni" onclick="goTo('pg-dash')"><div class="ico">🏠</div><div class="lbl">首页</div></div>
+      <div class="ni" onclick="goTo('pg-resident')"><div class="ico">💓</div><div class="lbl">健康</div></div>
+      <div class="sos-fab" onclick="goTo('pg-sos')">🆘</div>
+      <div class="ni on" onclick="goTo('pg-records')"><div class="ico">📋</div><div class="lbl">记录</div></div>
+      <div class="ni" onclick="goTo('pg-alerts')"><div class="ico">🔔<span class="nbadge">3</span></div><div class="lbl">警报</div></div>
+    </div>
+  </div>
+
+  <!-- ══ ALERTS ══ -->
+  <div class="page" id="pg-alerts">
+    <div class="sbar"><span>9:41</span><span>●●●● 🔋</span></div>
+    <div class="pcontent">
+      <div class="dash-head">
+        <div class="dh-top">
+          <div><div class="dh-greet">今日共 6 条</div><div class="dh-name">智能警报 🔔</div></div>
+          <div style="background:rgba(255,77,77,0.1);border:1px solid rgba(255,77,77,0.2);border-radius:12px;padding:6px 12px;font-size:12px;color:var(--danger);font-weight:600;">3 未处理</div>
+        </div>
+      </div>
+
+      <!-- Alert stats -->
+      <div class="alert-stats">
+        <div class="ast"><div class="ast-val" style="color:var(--danger)">3</div><div class="ast-lbl">未处理</div></div>
+        <div class="ast"><div class="ast-val" style="color:var(--warning)">1</div><div class="ast-lbl">处理中</div></div>
+        <div class="ast"><div class="ast-val" style="color:var(--accent2)">2</div><div class="ast-lbl">已完成</div></div>
+        <div class="ast"><div class="ast-val" style="color:var(--accent)">4.2<span style="font-size:12px">分</span></div><div class="ast-lbl">平均响应</div></div>
+      </div>
+
+      <div class="al-item danger" onclick="goTo('pg-resident')">
+        <div class="ali-hd"><div class="ali-type" style="color:var(--danger)">🚨 跌倒检测</div><div class="ali-time">刚刚</div></div>
+        <div class="ali-body">毫米波雷达检测到异常倒地姿态，已持续2分钟未响应，红外感应同步确认</div>
+        <div class="ali-ft"><div class="ali-who">👤 王淑芬 · 305房</div><div class="ali-st st-un">未处理</div></div>
+      </div>
+
+      <div class="al-item warning">
+        <div class="ali-hd"><div class="ali-type" style="color:var(--warning)">❤️ 心率异常</div><div class="ali-time">18分钟前</div></div>
+        <div class="ali-body">心率持续偏快达 104bpm，超出设定阈值 100bpm，建议关注</div>
+        <div class="ali-ft"><div class="ali-who">👤 赵建国 · 318房</div><div class="ali-st st-pr">处理中</div></div>
+      </div>
+
+      <div class="al-item warning">
+        <div class="ali-hd"><div class="ali-type" style="color:var(--warning)">🩺 血压偏高</div><div class="ali-time">35分钟前</div></div>
+        <div class="ali-body">血压测量值 148/92 mmHg，连续2次超标，已记录在案</div>
+        <div class="ali-ft"><div class="ali-who">👤 张德明 · 312房</div><div class="ali-st st-un">未处理</div></div>
+      </div>
+
+      <div class="al-item warning">
+        <div class="ali-hd"><div class="ali-type" style="color:var(--warning)">🛏️ 长期未返床</div><div class="ali-time">1小时前</div></div>
+        <div class="ali-body">夜间离床超过35分钟，未检测到返床信号，可能有跌倒风险</div>
+        <div class="ali-ft"><div class="ali-who">👤 陈玉兰 · 308房</div><div class="ali-st st-un">未处理</div></div>
+      </div>
+
+      <div class="al-item resolved">
+        <div class="ali-hd"><div class="ali-type" style="color:var(--text2)">💊 用药提醒</div><div class="ali-time">2小时前</div></div>
+        <div class="ali-body">早8点降压药服用提醒，已协助服药完成</div>
+        <div class="ali-ft"><div class="ali-who">👤 王淑芬 · 305房</div><div class="ali-st st-re">已处理</div></div>
+      </div>
+
+      <div class="al-item resolved">
+        <div class="ali-hd"><div class="ali-type" style="color:var(--text2)">🔋 设备电量</div><div class="ali-time">3小时前</div></div>
+        <div class="ali-body">手环W-038电量低于20%，已完成充电</div>
+        <div class="ali-ft"><div class="ali-who">👤 李桂英 · 301房</div><div class="ali-st st-re">已处理</div></div>
+      </div>
+    </div>
+    <div class="bnav">
+      <div class="ni" onclick="goTo('pg-dash')"><div class="ico">🏠</div><div class="lbl">首页</div></div>
+      <div class="ni" onclick="goTo('pg-resident')"><div class="ico">💓</div><div class="lbl">健康</div></div>
+      <div class="sos-fab" onclick="goTo('pg-sos')">🆘</div>
+      <div class="ni" onclick="goTo('pg-records')"><div class="ico">📋</div><div class="lbl">记录</div></div>
+      <div class="ni on" onclick="goTo('pg-alerts')"><div class="ico">🔔<span class="nbadge">3</span></div><div class="lbl">警报</div></div>
+    </div>
+  </div>
+
+  <!-- ══ SCHEDULE ══ -->
+  <div class="page" id="pg-schedule">
+    <div class="sbar"><span>9:41</span><span>●●●● 🔋</span></div>
+    <div class="pcontent">
+      <div class="dash-head">
+        <div class="dh-top">
+          <div><div class="back" onclick="goBack()" style="display:inline-flex;margin-right:10px;">←</div><div style="display:inline-block"><div class="dh-greet">3月7日 · 周六</div><div class="dh-name">排班管理 🗓️</div></div></div>
+        </div>
+      </div>
+
+      <div class="schedule-tabs">
+        <div class="stab on">今日排班</div>
+        <div class="stab">我的任务</div>
+        <div class="stab">本周概览</div>
+      </div>
+
+      <div class="shift-card">
+        <div class="sh-head"><div class="sh-shift">🌅 早班</div><div class="sh-time">07:00 – 15:00</div></div>
+        <div class="sh-nurses">
+          <div class="nurse-row"><div class="nurse-av" style="background:rgba(79,142,247,0.15);color:var(--accent)">李</div><div class="nurse-info"><div class="nurse-name">李护士（本人）</div><div class="nurse-rooms">负责区域：301-310房</div></div><div class="nurse-status ns-on">值班中</div></div>
+          <div class="nurse-row"><div class="nurse-av" style="background:rgba(0,229,160,0.12);color:var(--accent2)">陈</div><div class="nurse-info"><div class="nurse-name">陈小红</div><div class="nurse-rooms">负责区域：311-320房</div></div><div class="nurse-status ns-break">休息中</div></div>
+        </div>
+      </div>
+
+      <div class="shift-card">
+        <div class="sh-head"><div class="sh-shift">☀️ 中班</div><div class="sh-time">15:00 – 23:00</div></div>
+        <div class="sh-nurses">
+          <div class="nurse-row"><div class="nurse-av" style="background:rgba(167,139,250,0.12);color:var(--purple)">王</div><div class="nurse-info"><div class="nurse-name">王大姐</div><div class="nurse-rooms">负责区域：301-315房</div></div><div class="nurse-status ns-off">未上班</div></div>
+          <div class="nurse-row"><div class="nurse-av" style="background:rgba(247,195,79,0.12);color:var(--accent3)">刘</div><div class="nurse-info"><div class="nurse-name">刘小燕</div><div class="nurse-rooms">负责区域：316-330房</div></div><div class="nurse-status ns-off">未上班</div></div>
+        </div>
+      </div>
+
+      <div class="shift-card">
+        <div class="sh-head"><div class="sh-shift">🌙 夜班</div><div class="sh-time">23:00 – 07:00</div></div>
+        <div class="sh-nurses">
+          <div class="nurse-row"><div class="nurse-av" style="background:rgba(255,77,77,0.1);color:var(--danger)">赵</div><div class="nurse-info"><div class="nurse-name">赵护士</div><div class="nurse-rooms">全楼层值班</div></div><div class="nurse-status ns-off">未上班</div></div>
+        </div>
+      </div>
+
+      <div class="sec-hd" style="margin-top:8px;"><div class="sec-title">我的待办任务</div><div style="font-size:11px;color:var(--accent2)">3/7 完成</div></div>
+
+      <div class="task-item" onclick="toggleTask(this)"><div class="task-check done">✓</div><div class="task-info"><div class="task-name">王淑芬 · 晨间用药</div><div class="task-det">氨氯地平 5mg + 阿司匹林</div></div><div class="task-time">08:00</div></div>
+      <div class="task-item" onclick="toggleTask(this)"><div class="task-check done">✓</div><div class="task-info"><div class="task-name">张德明 · 血糖测量</div><div class="task-det">早餐后2小时测量</div></div><div class="task-time">09:30</div></div>
+      <div class="task-item" onclick="toggleTask(this)"><div class="task-check done">✓</div><div class="task-info"><div class="task-name">全区域 · 早间查房</div><div class="task-det">301-310房巡视记录</div></div><div class="task-time">09:00</div></div>
+      <div class="task-item" onclick="toggleTask(this)"><div class="task-check"></div><div class="task-info"><div class="task-name">王淑芬 · 处理跌倒警报</div><div class="task-det" style="color:var(--danger)">⚠ 紧急 · 305房</div></div><div class="task-time">现在</div></div>
+      <div class="task-item" onclick="toggleTask(this)"><div class="task-check"></div><div class="task-info"><div class="task-name">李桂英 · 午间照护</div><div class="task-det">用药 + 翻身护理</div></div><div class="task-time">12:00</div></div>
+      <div class="task-item" onclick="toggleTask(this)"><div class="task-check"></div><div class="task-info"><div class="task-name">全区域 · 下午查房</div><div class="task-det">体征测量 + 记录</div></div><div class="task-time">14:00</div></div>
+    </div>
+    <div class="bnav">
+      <div class="ni" onclick="goTo('pg-dash')"><div class="ico">🏠</div><div class="lbl">首页</div></div>
+      <div class="ni" onclick="goTo('pg-resident')"><div class="ico">💓</div><div class="lbl">健康</div></div>
+      <div class="sos-fab" onclick="goTo('pg-sos')">🆘</div>
+      <div class="ni on" onclick="goTo('pg-schedule')"><div class="ico">🗓️</div><div class="lbl">排班</div></div>
+      <div class="ni" onclick="goTo('pg-alerts')"><div class="ico">🔔<span class="nbadge">3</span></div><div class="lbl">警报</div></div>
+    </div>
+  </div>
+
+  <!-- ══ FAMILY VIEW ══ -->
+  <div class="page" id="pg-family">
+    <div class="sbar"><span>9:41</span><span>●●●● 🔋</span></div>
+    <div class="pcontent">
+      <div class="hd-head">
+        <div class="back" onclick="goBack()">←</div>
+        <div class="hd-info">
+          <div class="hd-name">家属查看端</div>
+          <div class="hd-sub">王强 查看 · 妈妈的状态</div>
+        </div>
+        <div style="font-size:18px">👨‍👩‍👧</div>
+      </div>
+
+      <div class="family-banner">
+        <div class="fb-title">王淑芬 今日状态 — 需关注 ⚠️</div>
+        <div class="fb-sub">305房 · 82岁 · 正在接受一级护理照护</div>
+      </div>
+
+      <!-- Vitals for family -->
+      <div class="sec-hd"><div class="sec-title">今日生命体征</div><div class="sec-more">详情 →</div></div>
+      <div class="family-vital"><div class="fv-ico">❤️</div><div class="fv-info"><div class="fv-name">心率</div><div class="fv-val" style="color:var(--warning)">98 <span style="font-size:14px;color:var(--text2)">bpm</span></div><div class="fv-time">刚刚测量</div></div><div class="fv-trend" style="color:var(--warning)">↑ 偏快</div></div>
+      <div class="family-vital"><div class="fv-ico">🩺</div><div class="fv-info"><div class="fv-name">血压</div><div class="fv-val" style="color:var(--warning)">142/88 <span style="font-size:12px;color:var(--text2)">mmHg</span></div><div class="fv-time">08:30 测量</div></div><div class="fv-trend" style="color:var(--warning)">↑ 偏高</div></div>
+      <div class="family-vital"><div class="fv-ico">💧</div><div class="fv-info"><div class="fv-name">血氧</div><div class="fv-val" style="color:var(--accent2)">96% <span style="font-size:12px;color:var(--text2)"></span></div><div class="fv-time">刚刚测量</div></div><div class="fv-trend" style="color:var(--accent2)">✓ 正常</div></div>
+
+      <!-- Activity timeline -->
+      <div class="sec-hd" style="margin-top:12px;"><div class="sec-title">今日照护记录</div></div>
+      <div style="padding:0 14px;">
+        <div class="activity-timeline">
+          <div class="at-item"><div class="at-dot" style="background:rgba(255,77,77,0.1);border-color:rgba(255,77,77,0.3)">🚨</div><div class="at-body"><div class="at-title" style="color:var(--danger)">跌倒警报触发</div><div class="at-sub">护工正在前往处理中</div><div class="at-time">09:39</div></div></div>
+          <div class="at-item"><div class="at-dot" style="background:rgba(0,229,160,0.08)">💊</div><div class="at-body"><div class="at-title">晨间用药完成</div><div class="at-sub">氨氯地平 + 阿司匹林 · 协助顺利服药</div><div class="at-time">08:30</div></div></div>
+          <div class="at-item"><div class="at-dot" style="background:rgba(79,142,247,0.1)">🛁</div><div class="at-body"><div class="at-title">个人清洁完成</div><div class="at-sub">晨间洗漱护理 · 老人情绪平稳</div><div class="at-time">07:45</div></div></div>
+          <div class="at-item"><div class="at-dot" style="background:rgba(255,170,0,0.1)">🍽️</div><div class="at-body"><div class="at-title">早餐记录</div><div class="at-sub">低盐软食 · 进食7成 · 食欲一般</div><div class="at-time">07:30</div></div></div>
+          <div class="at-item"><div class="at-dot" style="background:rgba(79,142,247,0.08)">😴</div><div class="at-body"><div class="at-title">夜间睡眠</div><div class="at-sub">22:00 入睡 · 起夜1次 · 睡眠质量一般</div><div class="at-time">昨晚</div></div></div>
+        </div>
+      </div>
+
+      <div style="margin:14px;padding:14px;background:var(--surface);border:1px solid var(--border);border-radius:16px;">
+        <div style="font-size:13px;font-weight:600;margin-bottom:8px;">📞 联系护工</div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-primary" style="flex:1;padding:12px;font-size:13px;" onclick="showToast('📞','正在连接护士站','李护士将很快接听',false)">呼叫责任护士</button>
+          <button class="btn-ghost" style="flex:1;padding:12px;font-size:13px;" onclick="showToast('💬','留言已发送','护工将在空闲时回复',false)">留言</button>
+        </div>
+      </div>
+    </div>
+    <div class="bnav">
+      <div class="ni" onclick="goTo('pg-dash')"><div class="ico">🏠</div><div class="lbl">首页</div></div>
+      <div class="ni on"><div class="ico">👨‍👩‍👧</div><div class="lbl">家属</div></div>
+      <div class="sos-fab" onclick="goTo('pg-sos')">🆘</div>
+      <div class="ni" onclick="goTo('pg-records')"><div class="ico">📋</div><div class="lbl">记录</div></div>
+      <div class="ni" onclick="goTo('pg-alerts')"><div class="ico">🔔<span class="nbadge">3</span></div><div class="lbl">警报</div></div>
+    </div>
+  </div>
+
+  <!-- ══ SOS ══ -->
+  <div class="page" id="pg-sos">
+    <div class="sbar"><span>9:41</span><span>●●●● 🔋</span></div>
+    <div class="pcontent" style="display:flex;flex-direction:column;padding-bottom:20px;">
+      <!-- SOS trigger -->
+      <div class="sos-center" style="padding:20px 28px 16px;">
+        <div class="sos-ring">
+          <button class="sos-btn" onclick="triggerSOS()">
+            <div class="sos-btn-ico">🆘</div>
+            <div class="sos-btn-txt">紧急</div>
+          </button>
+        </div>
+        <div class="sos-title">紧急求助</div>
+        <div class="sos-desc">按下后立即通知所有值班护士和医生<br>系统同步记录时间，全程可追溯</div>
+      </div>
+
+      <!-- Large call buttons -->
+      <div style="padding:0 16px;display:flex;flex-direction:column;gap:12px;">
+
+        <div onclick="showToast('👨‍⚕️','正在呼叫值班医生','张医生将于3分钟内到达',false)"
+          style="background:linear-gradient(135deg,rgba(79,142,247,0.18),rgba(79,142,247,0.08));border:1.5px solid rgba(79,142,247,0.4);border-radius:22px;padding:20px 24px;display:flex;align-items:center;gap:18px;cursor:pointer;transition:all 0.2s;active:scale(0.96);"
+          onpointerdown="this.style.transform='scale(0.97)'" onpointerup="this.style.transform='scale(1)'" onpointercancel="this.style.transform='scale(1)'">
+          <div style="width:64px;height:64px;background:rgba(79,142,247,0.15);border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:34px;flex-shrink:0;">👨‍⚕️</div>
+          <div style="flex:1;">
+            <div style="font-size:18px;font-weight:800;margin-bottom:4px;">呼叫值班医生</div>
+            <div style="font-size:12px;color:var(--text2);">张医生 · 内科 · 预计3分钟到达</div>
+          </div>
+          <div style="font-size:26px;">📞</div>
+        </div>
+
+        <div onclick="showToast('👩‍⚕️','正在呼叫护士站','李护士将立即响应',false)"
+          style="background:linear-gradient(135deg,rgba(0,229,160,0.15),rgba(0,229,160,0.05));border:1.5px solid rgba(0,229,160,0.35);border-radius:22px;padding:20px 24px;display:flex;align-items:center;gap:18px;cursor:pointer;transition:all 0.2s;"
+          onpointerdown="this.style.transform='scale(0.97)'" onpointerup="this.style.transform='scale(1)'" onpointercancel="this.style.transform='scale(1)'">
+          <div style="width:64px;height:64px;background:rgba(0,229,160,0.12);border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:34px;flex-shrink:0;">👩‍⚕️</div>
+          <div style="flex:1;">
+            <div style="font-size:18px;font-weight:800;margin-bottom:4px;">呼叫护士站</div>
+            <div style="font-size:12px;color:var(--text2);">早班护士 · 3人在岗 · 即时响应</div>
+          </div>
+          <div style="font-size:26px;">📞</div>
+        </div>
+
+        <div onclick="showToast('🚑','正在拨打120','急救中心已接听，请保持冷静',true)"
+          style="background:linear-gradient(135deg,rgba(255,77,77,0.18),rgba(255,77,77,0.06));border:1.5px solid rgba(255,77,77,0.45);border-radius:22px;padding:20px 24px;display:flex;align-items:center;gap:18px;cursor:pointer;transition:all 0.2s;"
+          onpointerdown="this.style.transform='scale(0.97)'" onpointerup="this.style.transform='scale(1)'" onpointercancel="this.style.transform='scale(1)'">
+          <div style="width:64px;height:64px;background:rgba(255,77,77,0.12);border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:34px;flex-shrink:0;">🚑</div>
+          <div style="flex:1;">
+            <div style="font-size:18px;font-weight:800;margin-bottom:4px;color:var(--danger)">拨打 120</div>
+            <div style="font-size:12px;color:var(--text2);">急救中心 · 24小时 · 优先接入</div>
+          </div>
+          <div style="font-size:26px;">📞</div>
+        </div>
+
+      </div>
+
+      <!-- Small back button at bottom -->
+      <div style="text-align:center;margin-top:20px;">
+        <span onclick="goBack()" style="font-size:12px;color:var(--text3);cursor:pointer;padding:8px 20px;border-radius:20px;border:1px solid var(--border);display:inline-block;">← 返回</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ ADMIN PAGE ══ -->
+  <div class="page" id="pg-admin">
+    <div class="sbar"><span>9:41</span><span>●●●● 🔋</span></div>
+    <div class="pcontent">
+      <div class="dash-head">
+        <div class="dh-top">
+          <div>
+            <div class="dh-greet">您好，</div>
+            <div class="dh-name">张院长 📊</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div class="dh-avatar" style="background:linear-gradient(135deg,var(--accent3),#e67e00)">张</div>
+            <div onclick="doLogout()" style="width:32px;height:32px;background:var(--surface2);border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;">🚪</div>
+          </div>
+        </div>
+        <div class="dh-date">🏢 春晖养老院管理中心 · 3月7日</div>
+      </div>
+
+      <!-- Admin stats -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 14px;margin-bottom:14px;">
+        <div class="sc" style="grid-column:1/3;display:flex;justify-content:space-between;align-items:center;">
+          <div><div class="sc-ico">🏥</div><div class="sc-val">48</div><div class="sc-lbl">在院老人总数</div></div>
+          <div style="text-align:right"><div style="font-size:11px;color:var(--text2)">床位使用率</div><div style="font-size:28px;font-weight:900;color:var(--accent2)">89%</div><div style="font-size:10px;color:var(--accent2)">↑ 本月最高</div></div>
+        </div>
+        <div class="sc"><div class="sc-ico">👩‍⚕️</div><div class="sc-val">12</div><div class="sc-lbl">今日在岗护工</div><div class="sc-chg up">↑全员到岗</div></div>
+        <div class="sc"><div class="sc-ico">⚠️</div><div class="sc-val" style="color:var(--danger)">3</div><div class="sc-lbl">未处理警报</div><div class="sc-chg dn">需立即跟进</div></div>
+        <div class="sc"><div class="sc-ico">📋</div><div class="sc-val">47</div><div class="sc-lbl">今日照护记录</div><div class="sc-chg up">↑完成率98%</div></div>
+        <div class="sc"><div class="sc-ico">⭐</div><div class="sc-val" style="color:var(--accent3)">4.8</div><div class="sc-lbl">本月满意度</div><div class="sc-chg up">↑ 较上月</div></div>
+      </div>
+
+      <!-- Monthly chart -->
+      <div class="chart-card" style="margin:0 14px 14px;">
+        <div class="cc-head"><div class="cc-title">本月警报处理趋势</div><div style="font-size:11px;color:var(--accent);background:rgba(79,142,247,0.1);padding:3px 8px;border-radius:8px;">3月</div></div>
+        <svg class="chart-svg" viewBox="0 0 340 80" height="80">
+          <defs>
+            <linearGradient id="adg" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#4f8ef7" stop-opacity="0.25"/>
+              <stop offset="100%" stop-color="#4f8ef7" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <path d="M5,60 C30,58 50,45 80,42 C110,39 130,50 160,46 C190,42 210,30 240,28 C270,26 300,38 335,35" fill="none" stroke="#4f8ef7" stroke-width="2.5"/>
+          <path d="M5,60 C30,58 50,45 80,42 C110,39 130,50 160,46 C190,42 210,30 240,28 C270,26 300,38 335,35 L335,80 L5,80Z" fill="url(#adg)"/>
+          <path d="M5,65 C30,64 50,58 80,56 C110,54 130,60 160,58 C190,56 210,48 240,45 C270,42 300,52 335,50" fill="none" stroke="#00e5a0" stroke-width="1.5" stroke-dasharray="4,3"/>
+          <text x="5" y="76" fill="#3a4a60" font-size="7" font-family="sans-serif">1日</text>
+          <text x="155" y="76" fill="#3a4a60" font-size="7" font-family="sans-serif">15日</text>
+          <text x="310" y="76" fill="#3a4a60" font-size="7" font-family="sans-serif">今天</text>
+          <rect x="5" y="4" width="8" height="2" rx="1" fill="#4f8ef7"/>
+          <text x="17" y="9" fill="#7a8caa" font-size="7" font-family="sans-serif">警报数</text>
+          <rect x="65" y="4" width="8" height="2" rx="1" fill="#00e5a0"/>
+          <text x="77" y="9" fill="#7a8caa" font-size="7" font-family="sans-serif">响应率</text>
+        </svg>
+      </div>
+
+      <div class="sec-hd"><div class="sec-title">护工绩效概览</div><div class="sec-more">详情 →</div></div>
+
+      <!-- Staff performance -->
+      <div style="margin:0 14px 10px;background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:14px 16px;">
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:36px;height:36px;border-radius:50%;background:rgba(79,142,247,0.15);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;">李</div>
+            <div style="flex:1;">
+              <div style="font-size:13px;font-weight:600;">李护士</div>
+              <div style="height:6px;background:var(--bg);border-radius:3px;margin-top:4px;overflow:hidden;"><div style="height:100%;width:95%;background:var(--accent2);border-radius:3px;"></div></div>
+            </div>
+            <div style="font-size:13px;font-weight:700;color:var(--accent2)">95分</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:36px;height:36px;border-radius:50%;background:rgba(0,229,160,0.1);color:var(--accent2);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;">陈</div>
+            <div style="flex:1;">
+              <div style="font-size:13px;font-weight:600;">陈小红</div>
+              <div style="height:6px;background:var(--bg);border-radius:3px;margin-top:4px;overflow:hidden;"><div style="height:100%;width:88%;background:var(--accent);border-radius:3px;"></div></div>
+            </div>
+            <div style="font-size:13px;font-weight:700;color:var(--accent)">88分</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:36px;height:36px;border-radius:50%;background:rgba(167,139,250,0.1);color:var(--purple);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;">王</div>
+            <div style="flex:1;">
+              <div style="font-size:13px;font-weight:600;">王大姐</div>
+              <div style="height:6px;background:var(--bg);border-radius:3px;margin-top:4px;overflow:hidden;"><div style="height:100%;width:82%;background:var(--purple);border-radius:3px;"></div></div>
+            </div>
+            <div style="font-size:13px;font-weight:700;color:var(--purple)">82分</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sec-hd"><div class="sec-title">高风险老人</div><div class="sec-more">全部48人 →</div></div>
+      <div class="rc" onclick="goTo('pg-resident')">
+        <div class="rc-av" style="background:rgba(255,77,77,0.12);color:var(--danger)">王</div>
+        <div class="rc-info"><div class="rc-name">王淑芬 · 305房</div><div class="rc-det">82岁 · 高血压 · 当前警报触发</div></div>
+        <div class="rc-right"><span class="rc-tag tag-danger"><span class="sdot s-danger"></span>紧急</span></div>
+      </div>
+      <div class="rc" onclick="goTo('pg-resident')">
+        <div class="rc-av" style="background:rgba(255,170,0,0.12);color:var(--warning)">赵</div>
+        <div class="rc-info"><div class="rc-name">赵建国 · 318房</div><div class="rc-det">85岁 · 心脏病 · 心率偏快</div></div>
+        <div class="rc-right"><span class="rc-tag tag-warn"><span class="sdot s-warn"></span>关注</span></div>
+      </div>
+    </div>
+    <div class="bnav">
+      <div class="ni on"><div class="ico">📊</div><div class="lbl">总览</div></div>
+      <div class="ni" onclick="goTo('pg-resident')"><div class="ico">👥</div><div class="lbl">老人</div></div>
+      <div class="sos-fab" onclick="goTo('pg-sos')">🆘</div>
+      <div class="ni" onclick="goTo('pg-schedule')"><div class="ico">🗓️</div><div class="lbl">排班</div></div>
+      <div class="ni" onclick="goTo('pg-alerts')"><div class="ico">🔔<span class="nbadge">3</span></div><div class="lbl">警报</div></div>
+    </div>
+  </div>
+
+  <!-- ══ FAMILY HOME PAGE ══ -->
+  <div class="page" id="pg-family-home">
+    <div class="sbar"><span>9:41</span><span>●●●● 🔋</span></div>
+    <div class="pcontent">
+      <div class="dash-head">
+        <div class="dh-top">
+          <div>
+            <div class="dh-greet">您好，</div>
+            <div class="dh-name">王强 👨‍👩‍👧</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div class="dh-avatar" style="background:linear-gradient(135deg,var(--purple),#7c3aed)">王</div>
+            <div onclick="doLogout()" style="width:32px;height:32px;background:var(--surface2);border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;">🚪</div>
+          </div>
+        </div>
+        <div class="dh-date">正在查看：王淑芬 · 305房</div>
+      </div>
+
+      <!-- Status banner -->
+      <div style="margin:0 14px 14px;background:linear-gradient(135deg,rgba(255,170,0,0.1),rgba(255,77,77,0.05));border:1px solid rgba(255,170,0,0.25);border-radius:20px;padding:16px;">
+        <div style="font-size:15px;font-weight:700;margin-bottom:4px;">妈妈今日状态 — 需关注 ⚠️</div>
+        <div style="font-size:12px;color:var(--text2);">305房 · 82岁 · 护工正在处理跌倒警报</div>
+        <div style="margin-top:12px;padding:10px;background:rgba(255,77,77,0.08);border-radius:12px;border:1px solid rgba(255,77,77,0.15);">
+          <div style="font-size:12px;color:var(--danger);font-weight:600;">🚨 09:39 检测到跌倒，护工李护士已前往处理</div>
+        </div>
+      </div>
+
+      <!-- Family vitals -->
+      <div class="sec-hd"><div class="sec-title">今日体征</div></div>
+      <div class="family-vital"><div class="fv-ico">❤️</div><div class="fv-info"><div class="fv-name">心率</div><div class="fv-val" style="color:var(--warning)">98 <span style="font-size:14px;color:var(--text2)">bpm</span></div><div class="fv-time">刚刚</div></div><div class="fv-trend" style="color:var(--warning)">↑ 偏快</div></div>
+      <div class="family-vital"><div class="fv-ico">🩺</div><div class="fv-info"><div class="fv-name">血压</div><div class="fv-val" style="color:var(--warning)">142/88 <span style="font-size:11px;color:var(--text2)">mmHg</span></div><div class="fv-time">08:30</div></div><div class="fv-trend" style="color:var(--warning)">↑ 偏高</div></div>
+      <div class="family-vital"><div class="fv-ico">💧</div><div class="fv-info"><div class="fv-name">血氧</div><div class="fv-val" style="color:var(--accent2)">96%</div><div class="fv-time">刚刚</div></div><div class="fv-trend" style="color:var(--accent2)">✓ 正常</div></div>
+
+      <!-- Today activities -->
+      <div class="sec-hd" style="margin-top:10px;"><div class="sec-title">今日照护记录</div></div>
+      <div style="padding:0 14px;">
+        <div class="activity-timeline">
+          <div class="at-item"><div class="at-dot" style="background:rgba(255,77,77,0.1);border-color:rgba(255,77,77,0.3)">🚨</div><div class="at-body"><div class="at-title" style="color:var(--danger)">跌倒警报，护工处理中</div><div class="at-sub">李护士已收到通知并前往</div><div class="at-time">09:39</div></div></div>
+          <div class="at-item"><div class="at-dot" style="background:rgba(0,229,160,0.08)">💊</div><div class="at-body"><div class="at-title">晨间用药完成</div><div class="at-sub">氨氯地平 + 阿司匹林 顺利服药</div><div class="at-time">08:30</div></div></div>
+          <div class="at-item"><div class="at-dot" style="background:rgba(79,142,247,0.1)">🛁</div><div class="at-body"><div class="at-title">晨间清洁完成</div><div class="at-sub">情绪平稳，配合良好</div><div class="at-time">07:45</div></div></div>
+          <div class="at-item"><div class="at-dot" style="background:rgba(255,170,0,0.1)">🍽️</div><div class="at-body"><div class="at-title">早餐记录</div><div class="at-sub">低盐软食，进食7成，食欲一般</div><div class="at-time">07:30</div></div></div>
+        </div>
+      </div>
+
+      <!-- Contact -->
+      <div style="margin:8px 14px 14px;padding:14px;background:var(--surface);border:1px solid var(--border);border-radius:16px;">
+        <div style="font-size:13px;font-weight:600;margin-bottom:10px;">📞 联系护工</div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-primary" style="flex:1;padding:12px;font-size:13px;" onclick="showToast('📞','正在连接责任护士','李护士将很快接听',false)">呼叫责任护士</button>
+          <button class="btn-ghost" style="flex:1;padding:12px;font-size:13px;" onclick="showToast('💬','留言已发送','护工将在空闲时回复您',false)">给护工留言</button>
+        </div>
+      </div>
+    </div>
+    <div class="bnav">
+      <div class="ni on"><div class="ico">🏠</div><div class="lbl">首页</div></div>
+      <div class="ni" onclick="goTo('pg-family')"><div class="ico">💓</div><div class="lbl">体征</div></div>
+      <div class="sos-fab" onclick="showToast('📞','紧急联系护士站','正在连接...',true)">🆘</div>
+      <div class="ni" onclick="goTo('pg-records')"><div class="ico">📋</div><div class="lbl">记录</div></div>
+      <div class="ni" onclick="showToast('💬','消息功能','与护工实时沟通',false)"><div class="ico">💬</div><div class="lbl">消息</div></div>
+    </div>
+  </div>
+
+  </div><!-- /screen -->
+</div><!-- /phone -->
+</div><!-- /wrapper -->
+
+<script>
+let cur = 'pg-login';
+let hist = [];
+
+function goTo(id) {
+  if (id === cur) return;
+  const prev = document.getElementById(cur);
+  const next = document.getElementById(id);
+  if (!next) return;
+  prev.classList.remove('active');
+  next.style.animation = 'none';
+  next.offsetHeight;
+  next.style.animation = 'pgIn 0.38s cubic-bezier(0.22,1,0.36,1) forwards';
+  next.classList.add('active');
+  hist.push(cur);
+  cur = id;
+}
+
+function goBack() {
+  if (!hist.length) { goTo('pg-dash'); return; }
+  const prev = hist.pop();
+  const c = document.getElementById(cur);
+  const p = document.getElementById(prev);
+  c.classList.remove('active');
+  p.style.animation = 'none';
+  p.offsetHeight;
+  p.style.animation = 'pgBack 0.35s cubic-bezier(0.22,1,0.36,1) forwards';
+  p.classList.add('active');
+  cur = prev;
+}
+
+function showToast(ico, title, body, danger = true) {
+  const t = document.getElementById('toast');
+  document.getElementById('t-ico').textContent = ico;
+  document.getElementById('t-title').textContent = title;
+  document.getElementById('t-body').textContent = body;
+  t.className = 'toast' + (danger ? ' danger' : '');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function diAlert(msg, color = '#ff4d4d') {
+  const d = document.getElementById('di');
+  d.classList.add('wide');
+  d.style.background = '#150505';
+  d.style.border = '1px solid rgba(255,77,77,0.35)';
+  d.innerHTML = `<span style="width:8px;height:8px;background:${color};border-radius:50%;animation:blink 1s infinite"></span><span class="di-content" style="color:${color}">${msg}</span>`;
+  setTimeout(() => {
+    d.classList.remove('wide');
+    d.style.background = '#000';
+    d.style.border = 'none';
+    d.innerHTML = '';
+  }, 4500);
+}
+
+// ── 角色数据配置 ──
+const ROLES = {
+  nurse: {
+    key: 'nurse',
+    name: '李护士',
+    avatar: '李',
+    org: '🏥 春晖养老院 · 早班',
+    greet: '早上好，',
+    homeGreet: '早上好，',
+    homeName: '李护士 👋',
+    homeDate: '🏥 春晖养老院 · 3月7日 周六 · 早班',
+    firstPage: 'pg-dash',
+    alertMsg: '王淑芬 305房 跌倒检测触发',
+  },
+  admin: {
+    key: 'admin',
+    name: '张院长',
+    avatar: '张',
+    org: '🏢 春晖养老院 · 管理后台',
+    greet: '您好，',
+    homeGreet: '您好，',
+    homeName: '张院长 📊',
+    homeDate: '🏢 春晖养老院管理中心 · 3月7日',
+    firstPage: 'pg-admin',
+    alertMsg: '今日共3条未处理警报，请关注',
+  },
+  family: {
+    key: 'family',
+    name: '王强',
+    avatar: '王',
+    org: '👨‍👩‍👧 家属端 · 查看妈妈状态',
+    greet: '您好，',
+    homeGreet: '您好，',
+    homeName: '王强 👨‍👩‍👧',
+    homeDate: '正在查看：王淑芬 · 305房',
+    firstPage: 'pg-family-home',
+    alertMsg: '妈妈今日状态需关注，护工已跟进',
+  }
+};
+
+let currentRole = 'nurse';
+
+function selRole(el) {
+  document.querySelectorAll('.role-btn').forEach(r => r.classList.remove('sel'));
+  el.classList.add('sel');
+  const idx = Array.from(document.querySelectorAll('.role-btn')).indexOf(el);
+  currentRole = ['nurse','admin','family'][idx];
+}
+
+function doLogin() {
+  const role = ROLES[currentRole];
+  // Update all dynamic welcome areas
+  document.getElementById('dash-greet').textContent = role.homeGreet;
+  document.getElementById('dash-name').textContent = role.homeName;
+  document.getElementById('dash-date').textContent = role.homeDate;
+  document.getElementById('dash-avatar').textContent = role.avatar;
+  showToast('✅', '登录成功', `欢迎回来，${role.name}`, false);
+  setTimeout(() => {
+    if (currentRole === 'nurse') goTo('pg-dash');
+    else if (currentRole === 'admin') goTo('pg-admin');
+    else goTo('pg-family-home');
+  }, 600);
+  // trigger auto alert after 5s
+  setTimeout(() => {
+    diAlert('📡 ' + role.alertMsg.slice(0,12));
+    showToast('🔔', '系统提醒', role.alertMsg, currentRole !== 'family');
+  }, 5000);
+}
+
+function doLogout() {
+  showToast('👋', '已退出登录', '正在返回登录页...', false);
+  setTimeout(() => {
+    hist = [];
+    cur = 'pg-dash'; // will be overridden
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    const login = document.getElementById('pg-login');
+    login.classList.add('active');
+    cur = 'pg-login';
+    // reset role selection
+    document.querySelectorAll('.role-btn').forEach((r,i) => r.classList.toggle('sel', i===0));
+    currentRole = 'nurse';
+  }, 800);
+}
+
+function handleAlert() {
+  diAlert('🔴 正在通知值班人员');
+  showToast('🚨', '已发出紧急通知', '3名护士已收到警报', true);
+}
+
+function notify() {
+  showToast('📟', '已通知值班医生', '张医生将于5分钟内到达', false);
+}
+
+function triggerSOS() {
+  diAlert('🆘 SOS 已发出', '#ff4d4d');
+  showToast('🆘', 'SOS已触发！', '正在通知所有值班人员...', true);
+  setTimeout(() => goTo('pg-dash'), 2500);
+}
+
+function submitRec() {
+  showToast('✅', '记录已提交', '照护记录已自动归档', false);
+}
+
+function rdTab(el, showId) {
+  document.querySelectorAll('.rd-tab').forEach(t => t.classList.remove('on'));
+  el.classList.add('on');
+  ['rd-vitals','rd-sensors','rd-history'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = id === showId ? 'block' : 'none';
+  });
+}
+
+function chartTab(el) {
+  document.querySelectorAll('.cc-tab').forEach(t => t.classList.remove('on'));
+  el.classList.add('on');
+}
+
+function toggleTask(el) {
+  const check = el.querySelector('.task-check');
+  check.classList.toggle('done');
+  check.textContent = check.classList.contains('done') ? '✓' : '';
+}
+</script>
+</body>
+</html>
