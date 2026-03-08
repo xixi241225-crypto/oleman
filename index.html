@@ -471,8 +471,8 @@ function enterApp() {
 <!-- PHONE -->
 <div class="phone" style="margin:0 auto;">
   <div class="di" id="di"></div>
-  <div class="toast" id="toast">
-    <div class="toast-ico" id="t-ico">⚠️</div>
+  <div class="toast" id="toast" style="visibility:hidden;">
+    <div class="toast-ico" id="t-ico"></div>
     <div><div class="toast-title" id="t-title"></div><div class="toast-body" id="t-body"></div></div>
   </div>
   <div class="screen">
@@ -1297,6 +1297,7 @@ function showToast(ico, title, body, danger = true) {
   document.getElementById('t-ico').textContent = ico;
   document.getElementById('t-title').textContent = title;
   document.getElementById('t-body').textContent = body;
+  t.style.visibility = 'visible';
   t.className = 'toast' + (danger ? ' danger' : '');
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 3000);
